@@ -15,16 +15,17 @@
       <span>TutorAssist</span>
     </div>
     <nav class="tabs" aria-label="Sections">
+      <span class="nav-hl" aria-hidden="true"></span>
       <button data-view="desk" class="active">Desk</button>
       <button data-view="students">Students</button>
-      <button data-view="materials">Materials</button>
+      <button data-view="materials">Documents</button>
       <button data-view="library">Library</button>
-      <button data-view="questions">Questions <span class="count" id="oq-count" hidden></span></button>
+      <button data-view="questions" id="tab-questions" hidden>Questions <span class="count" id="oq-count" hidden></span></button>
       <button data-view="settings">Settings</button>
     </nav>
     <div class="top-actions">
       <span class="busy" id="busy" hidden><span class="pulse"></span>Working</span>
-      <button class="btn" id="btn-feedback">Log feedback</button>
+      <button class="btn ghost" id="btn-feedback">Log feedback</button>
       <button class="btn primary" id="btn-prep-today">Prep today</button>
     </div>
   </header>
@@ -37,11 +38,11 @@
         <div class="side-block">
           <div class="side-head">
             <h2>Schedule</h2>
-            <button class="link" id="btn-refresh-cal" title="Re-read the calendar">Refresh</button>
+            <button class="icon-btn" id="btn-refresh-cal" title="Refresh calendar" aria-label="Refresh calendar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></svg></button>
           </div>
           <p class="cal-note" id="cal-note" hidden></p>
           <ol class="days" id="days"></ol>
-          <button class="link add-session" id="btn-add-session">Add a session by hand</button>
+          <button class="link add-session" id="btn-add-session">Add a session</button>
         </div>
         <div class="side-block">
           <div class="side-head"><h2>Students</h2></div>
@@ -79,18 +80,17 @@
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 6.5l-7.8 7.8a2 2 0 102.8 2.8l7.8-7.8a4 4 0 10-5.7-5.7L5.8 11.4a6 6 0 108.5 8.5l6.2-6.2"/></svg>
                   <span class="sr">Attach files</span>
                 </label>
-                <textarea id="composer-input" rows="1" placeholder="Ask the agent anything — “make Jordan's eval shorter”, “what should Maya cover next?”"></textarea>
-                <button class="btn primary" type="submit" id="composer-send">Send</button>
+                <textarea id="composer-input" rows="1" placeholder="Ask anything…"></textarea>
+                <button class="send" type="submit" id="composer-send" aria-label="Send" title="Send" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg></button>
               </div>
-              <p class="composer-hint" id="composer-hint">New conversation</p>
             </form>
           </div>
           <aside class="viewer" id="viewer" hidden aria-label="Document viewer">
             <div class="viewer-bar">
               <span class="viewer-title" id="viewer-title"></span>
               <div class="seg" id="viewer-seg" role="group" aria-label="Show"></div>
-              <a class="btn small" id="viewer-download" href="#">Download</a>
-              <button class="btn small" id="viewer-close" aria-label="Close viewer">Close</button>
+              <a class="icon-btn" id="viewer-download" href="#" title="Download" aria-label="Download"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg></a>
+              <button class="icon-btn" id="viewer-close" title="Close" aria-label="Close viewer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
             </div>
             <div class="viewer-body" id="viewer-body"></div>
           </aside>
@@ -103,7 +103,7 @@
       <aside class="list-side">
         <div class="side-head">
           <h2>Students</h2>
-          <button class="link" id="btn-add-student">Add student</button>
+          <button class="link" id="btn-add-student">Add</button>
         </div>
         <ul class="student-list" id="student-list"></ul>
       </aside>
@@ -114,13 +114,13 @@
     <section class="view materials" data-view="materials">
       <aside class="list-side scroll">
         <div class="side-head">
-          <h2>Materials</h2>
+          <h2>Documents</h2>
           <select id="mat-filter" aria-label="Filter by student"><option value="">Everyone</option></select>
         </div>
         <div id="mat-days"></div>
       </aside>
       <div class="preview" id="mat-preview">
-        <div class="empty">Pick a file to preview it here.</div>
+        <div class="empty">Pick a document.</div>
       </div>
     </section>
 
@@ -130,16 +130,16 @@
         <div class="page-head">
           <div>
             <h1>Library</h1>
-            <p class="lede">Textbooks are the agent's source of truth. Upload PDFs here; each one gets indexed once so the agent can search it cheaply, and gets a short key (like <em>Holt-A1</em>) the first time it's cited.</p>
+            <p class="lede">The textbooks the agent teaches from.</p>
           </div>
           <label class="btn primary file-btn">Upload textbooks<input type="file" id="tb-input" multiple accept="application/pdf"></label>
         </div>
         <table class="table" id="tb-table"></table>
-        <h2 class="section-title">Default book per subject</h2>
-        <p class="muted small">When a topic is in several books, the agent uses the first book in the row that covers it. A student's own <em>textbook</em> field overrides this.</p>
+        <h2 class="section-title">Default books</h2>
+        <p class="muted small">For each subject, the first book that covers a topic is used.</p>
         <div id="subject-defaults"></div>
         <h2 class="section-title">Book keys</h2>
-        <p class="muted small">Keys are permanent once a roster entry cites them — fix titles freely, but don't rename keys.</p>
+        <p class="muted small">Short names topics cite, like <em>Holt-A1</em>. Don't rename a key once it's used.</p>
         <div id="book-keys"></div>
       </div>
     </section>
@@ -149,8 +149,8 @@
       <div class="page-inner narrow">
         <div class="page-head">
           <div>
-            <h1>Open questions</h1>
-            <p class="lede">Proposals the agent made that are waiting on your call. Answer one and the agent updates the roster or spec, then removes it.</p>
+            <h1>Questions</h1>
+            <p class="lede">Decisions the agent is waiting on.</p>
           </div>
           <button class="btn" id="btn-edit-oq">Edit</button>
         </div>

@@ -109,7 +109,7 @@ containing* to a word your tutoring events share. Where to find the link:
   the ICS link
 
 **4. Try a prep.** Add a session by hand for Test Student 1 (on the left, under the
-schedule), then press **Prep** next to it. The example students' topics come from two
+schedule), click it, then press **Prep**. The example students' topics come from two
 books (`Holt-A1` and `Foerster-AT`), so upload those books first or change the topics
 to ones from your own books.
 
@@ -118,13 +118,13 @@ to ones from your own books.
 | To do this | Do this |
 |---|---|
 | Prep everyone on today's calendar | Nothing: it runs every morning. Or press **Prep today** |
-| Prep one session, including a future one | **Prep** next to the session |
+| Prep one session, including a future one | Click the session, then **Prep** (or **⋯ → Redo prep**) |
 | See a student's documents | Click the session (or the student's name) on the left. The guided worksheet, eval, answers and homework appear as tiles; earlier sessions are one click away |
 | Ask for changes | Select the student, then type in the chat ("make the eval shorter"). Changes replace that session's documents instead of adding files |
 | Fix a typo or a number yourself | Open the document → **Edit text** → **Save & rebuild PDF** |
-| Log how a session went | **Log feedback**: the student's eval answers, notes, photos of their work |
-| Edit a student | **Students** |
-| Answer the agent's questions | **Questions** |
+| Log how a session went | **Log feedback** (top right): the student's eval answers, notes, photos of their work |
+| Edit a student | **Students**, or **⋯ → Edit student** on the desk |
+| Answer the agent's questions | **Questions** (the tab appears when the agent has one) |
 
 If something stops working (for example Claude Code gets signed out), a red banner at the
 top of the app shows the command that fixes it.

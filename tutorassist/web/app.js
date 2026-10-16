@@ -48,6 +48,42 @@ function fill(el, ...kids) {
   return el;
 }
 
+const ICONS = {
+  x: "M6 6l12 12M18 6L6 18",
+  more: "M5 12h.01M12 12h.01M19 12h.01",
+  download: "M12 4v11M7 10.5l5 5 5-5M5 20h14",
+};
+function icon(name) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", ICONS[name]);
+  if (name === "more") { path.setAttribute("stroke-width", "3"); }
+  svg.append(path);
+  return svg;
+}
+
+/* A small ⋯ menu anchored to its button; closes on outside click or Escape. */
+function menuButton(items, label = "More") {
+  const wrap = h("span", { style: "position:relative;display:inline-flex" });
+  const btn = h("button", { class: "icon-btn", title: label, "aria-label": label, "aria-haspopup": "menu", "aria-expanded": "false" }, icon("more"));
+  let menu = null;
+  const close = () => { if (!menu) return; menu.remove(); menu = null; btn.setAttribute("aria-expanded", "false"); document.removeEventListener("click", outside, true); };
+  const outside = (e) => { if (!wrap.contains(e.target)) close(); };
+  btn.addEventListener("click", () => {
+    if (menu) return close();
+    menu = h("div", { class: "menu", role: "menu", onkeydown: (e) => { if (e.key === "Escape") { close(); btn.focus(); } } },
+      items.filter(Boolean).map((it) => h("button", { role: "menuitem", class: it.danger ? "danger" : "", onclick: () => { close(); it.run(); } }, it.label)));
+    wrap.append(menu);
+    btn.setAttribute("aria-expanded", "true");
+    menu.querySelector("button")?.focus();
+    setTimeout(() => document.addEventListener("click", outside, true));
+  });
+  wrap.append(btn);
+  return wrap;
+}
+
 async function api(method, path, body) {
   const opts = { method, headers: { "x-tutor-token": TOKEN } };
   if (body !== undefined) {
@@ -220,9 +256,20 @@ function renderChrome() {
 }
 
 /* ------------------------------------------------------------------ views */
+function moveNavHl() {
+  const hl = $(".nav-hl");
+  const b = $(".tabs button.active");
+  if (!hl || !b || b.hidden) { if (hl) hl.classList.remove("on"); return; }
+  hl.style.left = `${b.offsetLeft + 6}px`;
+  hl.style.width = `${b.offsetWidth - 12}px`;
+  hl.classList.add("on");
+}
+
 function show(view) {
   S.view = view;
+  if (view === "questions") $("#tab-questions").hidden = false;
   $$(".tabs button").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
+  moveNavHl();
   $$(".view").forEach((v) => v.classList.toggle("active", v.dataset.view === view));
   if (view === "students") renderStudents();
   if (view === "materials") loadMaterials();
@@ -244,7 +291,7 @@ function renderSchedule() {
   } else if (!S.state.config.calendar.icsUrl) {
     note.hidden = false;
     note.className = "cal-note warn";
-    note.textContent = "No calendar connected. Add your calendar's iCal link in Settings, or add sessions by hand.";
+    fill(note, "No calendar yet. ", h("button", { class: "link", onclick: () => show("settings") }, "Connect one"));
   } else if (sch.warning) {
     note.hidden = false;
     note.className = "cal-note warn";
@@ -267,28 +314,25 @@ function renderSchedule() {
               let next = false;
               if (!past && !nextMarked) { next = true; nextMarked = true; }
               const who = ev.student || ev.summary;
-              const meta = ev.known
-                ? [minutes(ev.minutes), ev.source === "manual" ? "added by hand" : ""].filter(Boolean).join(", ")
-                : "not matched to a student";
+              const meta = ev.known ? minutes(ev.minutes) : "Not on your roster";
               const selected = S.focus && ev.known && S.focus.student === ev.student && S.focus.date === d.date;
               const open = () => selectStudent(ev.student, d.date);
               return h("div", {
                 class: "session" + (past ? " past" : "") + (next ? " next" : "") + (ev.known ? " pick" : "") + (selected ? " selected" : ""),
                 role: ev.known ? "button" : undefined, tabindex: ev.known ? "0" : undefined,
                 "aria-label": ev.known ? `Open ${ev.student}'s ${dayName(d.date).toLowerCase()} session` : undefined,
-                onclick: ev.known ? (e) => { if (!e.target.closest(".acts")) open(); } : undefined,
+                onclick: ev.known ? (e) => { if (!e.target.closest(".x")) open(); } : undefined,
                 onkeydown: ev.known ? (e) => { if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) { e.preventDefault(); open(); } } : undefined,
               },
                 h("div", { class: "time" }, h("span", { class: "hl" }, c.t, h("span", { class: "ampm" }, c.ap))),
                 h("div", {},
                   h("div", { class: "who" }, who),
                   h("div", { class: "meta" + (ev.known ? "" : " unmatched") }, meta)),
-                h("div", { class: "acts" },
-                  ev.known && h("button", { class: "link", onclick: () => startPrep(d.date, [ev.student]) }, "Prep"),
-                  ev.known && h("button", { class: "link", onclick: () => openFeedback(ev.student, d.date) }, "Log feedback"),
-                  ev.source === "manual" && h("button", { class: "link danger", onclick: () => removeManual(ev.id) }, "Remove")));
+                ev.source === "manual"
+                  ? h("button", { class: "icon-btn x", title: "Remove this session", "aria-label": `Remove ${who}'s session`, onclick: () => removeManual(ev.id) }, icon("x"))
+                  : h("span", {}));
             })
-          : h("div", { class: "day-empty" }, d.date === today ? "No sessions today." : "No sessions."))));
+          : h("div", { class: "day-empty" }, "No sessions"))));
   renderSideStudents();
 }
 
@@ -298,7 +342,7 @@ function renderSideStudents() {
     h("button", { class: (S.focus?.student === st.name ? "on" : "") + (st.status === "paused" ? " paused" : ""),
       "aria-pressed": S.focus?.student === st.name ? "true" : "false",
       onclick: () => (S.focus?.student === st.name ? clearFocus() : selectStudent(st.name)) }, st.name))),
-    list.length ? null : h("li", { class: "muted small" }, "No students yet."));
+    list.length ? null : h("li", { class: "side-empty" }, "No students yet"));
 }
 
 function endHM(ev) {
@@ -321,7 +365,7 @@ async function startPrep(date, only = []) {
   if (!only.length && date === today) {
     const todays = S.state.schedule.days.find((d) => d.date === today);
     if (!todays || !todays.events.length) {
-      toast("Today's calendar has no sessions. Use Prep on a session in the schedule, or add one by hand.");
+      toast("No sessions today. Pick a student to prep a single session.");
       return;
     }
   }
@@ -359,14 +403,8 @@ function renderConvs() {
           h("span", { class: "ct" }, h("span", { class: "dot " + st }), c.title),
           h("span", { class: "cw" }, ago(c.updatedAt))));
     }),
-    convs.length ? null : h("li", { class: "muted small" }, S.focus ? `Nothing about ${S.focus.student} yet.` : "Nothing yet."));
-  const about = S.focus ? `about ${S.focus.student}'s session ${when(S.focus.date)}` : "";
-  $("#composer-hint").textContent = S.convId
-    ? `Replies continue this conversation${about ? ", " + about : ""}.`
-    : `Starts a new conversation${about ? " " + about : ""}.`;
-  $("#composer-input").placeholder = S.focus
-    ? `Message about ${S.focus.student}…`
-    : "Ask the agent anything — “make Jordan's eval shorter”, “what should Maya cover next?”";
+    convs.length ? null : h("li", { class: "side-empty" }, "Nothing yet"));
+  $("#composer-input").placeholder = S.focus ? `Ask about ${S.focus.student}…` : "Ask anything…";
 }
 
 async function openConversation(id, scroll = true) {
@@ -406,23 +444,34 @@ function newConversation(focusInput = true) {
 function renderThread() {
   const th = $("#thread");
   if (!S.conv && S.focus) {
+    const ask = ["Make the eval shorter", "Swap problem 3 for an easier one", "What should we cover next?"];
     fill(th, h("div", { class: "welcome" },
-      h("h2", {}, `Working on ${S.focus.student}`),
-      h("p", {}, `Anything you type here is about ${S.focus.student} and the session ${when(S.focus.date)}: “make the eval shorter”, “swap problem 3 for an easier one”, “what should we cover next?”. Changes replace that session's documents instead of adding new files.`)));
+      h("h2", {}, `Ask about ${S.focus.student}`),
+      h("p", {}, (() => {
+        const w = when(S.focus.date || todayISO());
+        return `Changes apply to ${["today", "tomorrow", "yesterday"].includes(w) ? `${w}'s session` : `the session ${w}`}.`;
+      })()),
+      h("div", { class: "chips" }, ask.map((q) => h("button", { class: "chip", onclick: () => prefill(q) }, q)))));
     return;
   }
   if (!S.conv) {
     const name = S.state?.config?.tutorName;
+    const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: tz(), hour: "2-digit", hour12: false }).format(new Date()));
+    const part = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
     const today = S.state?.schedule?.days?.find((d) => d.date === todayISO());
-    const n = today ? today.events.filter((e) => e.known).length : 0;
+    const nowHM = new Intl.DateTimeFormat("en-GB", { timeZone: tz(), hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
+    const known = today ? today.events.filter((e) => e.known) : [];
+    const upcoming = known.filter((e) => !e.time || endHM(e) > nowHM);
     fill(th, h("div", { class: "welcome" },
-      h("h1", {}, name ? `Hi ${name.split(" ")[0]}.` : "Welcome."),
-      h("p", {}, n
-        ? `You have ${n} session${n === 1 ? "" : "s"} today. Prep builds each student's guided worksheet, eval, and answer key from their roster entry and your textbooks.`
-        : "No sessions on today's calendar. You can prep any upcoming session from the schedule, log feedback, or ask the agent something below."),
-      h("div", { class: "row" },
-        n ? h("button", { class: "btn primary", onclick: () => startPrep(todayISO()) }, "Prep today") : null,
-        h("button", { class: "btn", onclick: () => openFeedback() }, "Log feedback"))));
+      h("h1", {}, name ? `${part}, ${name.split(" ")[0]}.` : `${part}.`),
+      h("p", {}, !known.length ? "No sessions today."
+        : upcoming.length ? `${upcoming.length} session${upcoming.length === 1 ? "" : "s"} still to go today.`
+        : "That's all of today's sessions."),
+      upcoming.length ? h("div", { class: "chips" }, upcoming.map((e) => {
+        const c = clock(e.time);
+        return h("button", { class: "chip", onclick: () => selectStudent(e.student, todayISO()) },
+          h("span", { class: "ct" }, `${c.t} ${c.ap}`), e.student);
+      })) : null));
     return;
   }
   fill(th, ...S.conv.runs.flatMap(({ run, events }) => {
@@ -485,9 +534,13 @@ function paintAgent(m) {
   const run = m.run;
   const running = ["queued", "running"].includes(run.status);
   const stateText = { queued: "Waiting for the previous run", running: "Working", done: "Done", error: "Didn't finish", stopped: "Stopped" }[run.status] || run.status;
-  const kind = { prep: "Prep", feedback: "Feedback", chat: "Agent" }[run.kind] || "Agent";
+  const named = {
+    prep: { running: "Prepping", done: "Prep done" },
+    feedback: { running: "Logging feedback", done: "Feedback logged" },
+  }[run.kind] || {};
+  const label = named[run.status] || (run.kind === "prep" && !running ? `Prep: ${stateText.toLowerCase()}` : stateText);
   const head = h("div", { class: "agent-head" },
-    h("span", { class: "state " + run.status }, running ? h("span", { class: "pulse" }) : null, `${kind}: ${stateText}`),
+    h("span", { class: "state " + run.status }, running ? h("span", { class: "pulse" }) : null, label),
     running
       ? h("button", { class: "link danger", onclick: () => api("POST", `/api/runs/${run.id}/cancel`).catch(fail) }, "Stop")
       : h("span", { class: "cost" }, duration(run)));
@@ -517,9 +570,9 @@ function paintAgent(m) {
   const extra = m.extra || m.run.extraFiles || [];
   const files = (pdfs.length || extra.length) ? h("div", { class: "files" },
     pdfs.map((f) => fileChip(f)),
-    extra.length ? h("span", { class: "muted small" }, "Also kept in the app (not in your folders): ",
+    extra.length ? h("span", { class: "muted small" }, "Other files: ",
       extra.map((f, i) => [i ? ", " : "", h("a", { href: fileUrl(f), onclick: (e) => { e.preventDefault(); openViewer({ title: f.split("/").pop(), file: f }); } }, f.split("/").pop())])) : null) : null;
-  const roster = m.roster?.length ? h("div", { class: "roster-note" }, h("strong", {}, "Roster updated: "),
+  const roster = m.roster?.length ? h("div", { class: "roster-note" }, h("strong", {}, "Updated "),
     m.roster.map((c) => `${c.name} (${c.change === "updated" ? c.fields.map((f) => FIELD_NAMES[f] || f).join(", ") : c.change})`).join("; ")) : null;
   const errs = m.errors.length && run.status !== "stopped" ? h("div", { class: "msg-error" }, m.errors.join("\n")) : null;
   fill(m.el, head, todos, activity, body, files, roster, errs);
@@ -638,6 +691,15 @@ function restoreFocus() {
   return null;
 }
 
+/* Put a suggestion in the composer for the tutor to send (or edit first). */
+function prefill(text) {
+  const ta = $("#composer-input");
+  ta.value = text;
+  ta.dispatchEvent(new Event("input"));
+  ta.focus();
+}
+
+let focusEntered = null;  // the student whose panel already played its entrance
 function selectStudent(name, date = null) {
   if (S.focus?.student !== name) { S.viewer = null; S.docs = null; paintViewer(); }
   S.focus = { student: name, date };
@@ -652,7 +714,7 @@ function selectStudent(name, date = null) {
 }
 
 function clearFocus() {
-  S.focus = null; S.docs = null; S.viewer = null;
+  S.focus = null; S.docs = null; S.viewer = null; focusEntered = null;
   saveFocus();
   paintFocus(); paintViewer(); renderSchedule(); renderConvs();
   if (!S.conv) renderThread();
@@ -696,59 +758,66 @@ function paintFocus() {
   const date = cur.date;
 
   $("#focus-name").textContent = st.name;
-  const bits = [st.subject, st.hw ? "homework assigned" : "no homework"].filter(Boolean);
+  const bits = [st.subject];
   if (cur.session?.time) {
     const c = clock(cur.session.time);
-    bits.push(`session ${when(date)} at ${c.t} ${c.ap}` + (cur.session.minutes ? ` for ${minutes(cur.session.minutes)}` : ""));
+    bits.push(`${when(date)} at ${c.t} ${c.ap}` + (cur.session.minutes ? `, ${minutes(cur.session.minutes)}` : ""));
   }
-  const meta = bits.join(", ");
-  $("#focus-meta").textContent = meta ? meta[0].toUpperCase() + meta.slice(1) + "." : "";
+  $("#focus-meta").textContent = bits.filter(Boolean).join(" — ");
 
   const hasPrep = cur.docs.some((x) => ["Guided", "Eval", "Eval_Answers"].includes(x.type) && x.pdf);
   const prep = async () => {
-    if (hasPrep && !confirm(`Redo prep for ${st.name} ${when(date)}? The new guided worksheet, eval and answers replace the current ones.`)) return;
+    if (hasPrep && !confirm(`Redo prep for ${st.name} ${when(date)}? The new documents replace the current ones.`)) return;
     startPrep(date, [st.name]);
   };
+  const upcoming = date >= todayISO();
   fill($("#focus-actions"),
-    h("button", { class: "btn small", onclick: prep }, hasPrep ? "Redo prep" : "Prep this session"),
-    h("button", { class: "btn small", onclick: () => openFeedback(st.name, date) }, "Log feedback"),
-    h("button", { class: "btn small", onclick: () => { show("students"); pickRosterStudent(st.name); } }, "Edit student"),
-    h("button", { class: "btn small", onclick: clearFocus, title: "Back to all students" }, "Close"));
+    !hasPrep && upcoming ? h("button", { class: "btn small primary", onclick: prep }, "Prep") : null,
+    menuButton([
+      hasPrep || !upcoming ? { label: hasPrep ? "Redo prep" : "Prep this session", run: prep } : null,
+      { label: "Edit student", run: () => { show("students"); pickRosterStudent(st.name); } },
+    ]),
+    h("button", { class: "icon-btn", onclick: clearFocus, title: "Close", "aria-label": "Close student" }, icon("x")));
 
   fill($("#focus-dates"), sessions.slice(0, 12).map((x) => {
     const n = x.docs.filter((d) => d.pdf).length;
     return h("button", { class: "date-chip", role: "tab", "aria-selected": x.date === date ? "true" : "false",
       onclick: () => { S.focus.date = x.date; saveFocus(); paintFocus(); renderSchedule(); renderConvs(); if (!S.conv) renderThread(); } },
-      chipLabel(x.date), n ? h("span", { class: "n" }, `(${n})`) : null);
+      chipLabel(x.date), n ? h("span", { class: "n" }, n) : null);
   }));
 
-  fill($("#doc-tiles"), cur.docs.map((d) => {
+  // The entrance plays once per student you open, not on every repaint. The class stays
+  // on briefly so the tiles that arrive with the first document load fan in too.
+  if (focusEntered !== st.name) {
+    focusEntered = st.name;
+    box.classList.add("enter");
+    clearTimeout(paintFocus.t);
+    paintFocus.t = setTimeout(() => box.classList.remove("enter"), 1000);
+  }
+  fill($("#doc-tiles"), cur.docs.map((d, i) => {
+    const title = `${st.name}: ${d.label} (${shortDate(date)})`;
     if (d.pdf) {
-      const title = `${st.name}: ${d.label} (${shortDate(date)})`;
-      return h("div", { class: "tile-wrap" },
+      return h("div", { class: "tile-wrap", style: `--i:${i}` },
         h("button", { class: "tile" + (S.viewer?.pdf === d.pdf ? " on" : ""),
           onclick: () => { openViewer({ title, pdf: d.pdf, source: d.source }); } },
-          h("span", { class: "tt" }, d.label),
-          h("span", { class: "ts" }, "Ready to view"),
-          h("span", { class: "ta" }, h("span", { class: "muted" }, "PDF"), d.source ? h("span", { class: "muted" }, "+ source") : null)),
-        h("a", { class: "tile-dl", href: fileUrl(d.pdf) + "?download=1", download: d.pdf.split("/").pop(),
-          title: `Download ${d.label}`, "aria-label": `Download ${d.label}` }, "↓"));
+          h("span", { class: "tt" }, d.label), h("span", { class: "ts" }, "PDF")),
+        h("a", { class: "icon-btn tile-dl", href: fileUrl(d.pdf) + "?download=1", download: d.pdf.split("/").pop(),
+          title: `Download ${d.label}`, "aria-label": `Download ${d.label}` }, icon("download")));
     }
     const isHw = d.type.startsWith("Homework");
-    let hint, action = null;
-    if (d.source) {
-      hint = "Not built yet";
-      action = h("button", { class: "link", onclick: () => openViewer({ title: `${st.name}: ${d.label} (${shortDate(date)})`, pdf: null, source: d.source, mode: "source" }) }, "Open the text");
-    } else if (!isHw && date < todayISO()) hint = "Not made for this session";
-    else if (!isHw) { hint = "Made by Prep"; action = h("button", { class: "link", onclick: prep }, "Prep"); }
-    else if (st.hw) { hint = "Made after you log feedback"; action = h("button", { class: "link", onclick: () => openFeedback(st.name, date) }, "Log feedback"); }
-    else hint = "Homework isn't assigned";
-    return h("div", { class: "tile-wrap" }, h("div", { class: "tile missing" },
-      h("span", { class: "tt" }, d.label), h("span", { class: "ts" }, hint), h("span", { class: "ta" }, action)));
+    let hint;
+    if (d.source) hint = "Text only. Open to build";
+    else if (!isHw && date < todayISO()) hint = "Not made";
+    else if (!isHw) hint = "Not prepped yet";
+    else if (st.hw) hint = "After feedback";
+    else hint = "No homework";
+    const open = d.source ? () => openViewer({ title, pdf: null, source: d.source, mode: "source" }) : undefined;
+    return h("div", { class: "tile-wrap", style: `--i:${i}` }, h(open ? "button" : "div", { class: "tile missing" + (open ? " can" : ""), onclick: open },
+      h("span", { class: "tt" }, d.label), h("span", { class: "ts" }, hint)));
   }));
 
   fill($("#doc-other"), cur.other.length ? [
-    h("span", {}, "Also from this session, kept in the app:"),
+    h("span", {}, "Other files:"),
     cur.other.map((o) => h("button", { class: "link", onclick: () => openViewer({ title: o.name, file: o.path }) }, o.name))] : null);
 }
 
@@ -774,7 +843,7 @@ function leaveEditor() {
 const isSource = (path) => /^\.work\/sources\/\d{4}-\d{2}-\d{2}\/[^/]+\.txt$/.test(path || "");
 
 function sourceEditor(v) {
-  const status = h("span", { class: "src-status" }, "Edit the text, then rebuild — no agent run needed.");
+  const status = h("span", { class: "src-status" }, "Rebuilding doesn't use Claude.");
   const ta = h("textarea", { class: "src-text", spellcheck: "false", disabled: true }, "");
   const save = h("button", { class: "btn small primary", disabled: true }, "Save & rebuild PDF");
   const revert = h("button", { class: "btn small", disabled: true }, "Undo changes");
@@ -819,7 +888,7 @@ function paintViewer() {
   box.hidden = false;
   $("#viewer-title").textContent = v.title;
   fill($("#viewer-seg"), v.pdf && v.source
-    ? [["pdf", "PDF"], ["source", isSource(v.source) ? "Edit text" : "Source text"]].map(([k, label]) => h("button", { "aria-pressed": v.mode === k ? "true" : "false",
+    ? [["pdf", "PDF"], ["source", isSource(v.source) ? "Edit text" : "Text"]].map(([k, label]) => h("button", { "aria-pressed": v.mode === k ? "true" : "false",
         onclick: () => { v.mode = k; paintViewer(); } }, label))
     : null);
   const path = v.mode === "source" ? v.source : (v.pdf || v.file);
@@ -846,11 +915,16 @@ function renderAttachments() {
   fill($("#attachments"), ...S.attachments.map((p, i) =>
     h("span", { class: "att-chip" }, p.split("/").pop(),
       h("button", { type: "button", "aria-label": "Remove", onclick: () => { S.attachments.splice(i, 1); renderAttachments(); } }, "×"))));
+  const ta = $("#composer-input");
+  $("#composer-send").disabled = !ta.value.trim() && !S.attachments.length;
 }
 
 function wireComposer() {
   const ta = $("#composer-input");
-  const grow = () => { ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px"; };
+  const grow = () => {
+    ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
+    $("#composer-send").disabled = !ta.value.trim() && !S.attachments.length;
+  };
   ta.addEventListener("input", grow);
   ta.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#composer").requestSubmit(); }
@@ -863,8 +937,7 @@ function wireComposer() {
     try {
       await sendChat(text);
       ta.value = "";
-      grow();
-    } catch (err) { fail(err); } finally { $("#composer-send").disabled = false; }
+    } catch (err) { fail(err); } finally { grow(); }
   });
   $("#attach-input").addEventListener("change", async (e) => {
     const files = [...e.target.files];
@@ -917,14 +990,14 @@ function openFeedback(student, date) {
   const sel = studentSelect(student, { allowEmpty: !student });
   const dateIn = h("input", { type: "date", value: date || todayISO() });
   const answers = h("textarea", { class: "plain", rows: 6, placeholder: "1. x = 4\n2. B\n3. (skipped)\n…" });
-  const notes = h("textarea", { class: "plain", rows: 4, placeholder: "What clicked, what didn't, any change of plan — e.g. “struggled with negative exponents; skip the Upper Bound Theorem”." });
+  const notes = h("textarea", { class: "plain", rows: 3, placeholder: "What clicked, what didn't…" });
   const files = [];
   const fileList = h("div", { class: "attachments", style: "margin-left:0;margin-top:8px" });
   const paint = () => fill(fileList, ...files.map((p, i) => h("span", { class: "att-chip" }, p.split("/").pop(),
     h("button", { type: "button", onclick: () => { files.splice(i, 1); paint(); } }, "×"))));
   const dz = dropzone(async (fs) => {
     try { const r = await upload("/api/inbox", fs); files.push(...r.paths); paint(); } catch (e) { fail(e); }
-  }, "Drop photos or scans of the student's work, or click to choose");
+  }, "Add photos of their work");
   const send = h("button", { class: "btn primary", onclick: async () => {
     if (!sel.value) return toast("Choose a student.", true);
     if (!answers.value.trim() && !notes.value.trim() && !files.length) return toast("Add eval answers, notes, or photos.", true);
@@ -937,16 +1010,16 @@ function openFeedback(student, date) {
       await openConversation(r.conversation.id);
       softRefresh();
     } catch (e) { fail(e); send.disabled = false; }
-  } }, "Send to agent");
+  } }, "Log feedback");
   openDialog([
-    h("h2", {}, "Log session feedback"),
-    h("p", { class: "sub" }, "The agent grades the eval against that day's answer key, updates the student's strengths, weaknesses, and next topics, and builds homework if it's assigned."),
+    h("h2", {}, "Log feedback"),
+    h("p", { class: "sub" }, "Grades the eval, updates the student, and makes homework."),
     h("div", { class: "fields" },
       h("div", { class: "field" }, h("label", {}, "Student"), sel),
-      h("div", { class: "field" }, h("label", {}, "Session date"), dateIn),
-      h("div", { class: "field full" }, h("label", {}, "Eval answers"), h("p", { class: "help" }, "In question order. Leave blank if there was no eval."), answers),
+      h("div", { class: "field" }, h("label", {}, "Session"), dateIn),
+      h("div", { class: "field full" }, h("label", {}, "Eval answers"), answers),
       h("div", { class: "field full" }, h("label", {}, "Notes"), notes),
-      h("div", { class: "field full" }, h("label", {}, "Photos of work"), dz, fileList)),
+      h("div", { class: "field full" }, dz, fileList)),
     h("div", { class: "dialog-actions" }, h("button", { class: "btn", onclick: closeDialog }, "Cancel"), send),
   ]);
 }
@@ -960,7 +1033,6 @@ function openAddSession() {
   const end = h("input", { type: "time", value: "17:00" });
   openDialog([
     h("h2", {}, "Add a session"),
-    h("p", { class: "sub" }, "For sessions that aren't on your calendar. The agent reads them exactly like calendar events."),
     h("div", { class: "fields" },
       h("div", { class: "field full" }, h("label", {}, "Student"), who, dl),
       h("div", { class: "field" }, h("label", {}, "Date"), date),
@@ -1047,8 +1119,8 @@ function markDirty() {
 function paintEditor() {
   const ed = $("#student-editor");
   if (!S.draft) {
-    fill(ed, h("div", { class: "empty" }, h("p", {}, "Students live in roster.json — the agent reads it before every prep and rewrites it after every piece of feedback."),
-      h("button", { class: "btn primary", onclick: newStudent }, "Add your first student")));
+    fill(ed, h("div", { class: "empty" }, h("h2", {}, "No students yet"),
+      h("button", { class: "btn primary", onclick: newStudent }, "Add a student")));
     return;
   }
   const d = S.draft;
@@ -1066,28 +1138,27 @@ function paintEditor() {
   fill(ed, h("div", { class: "editor-inner" },
     h("div", { class: "editor-head" },
       h("h1", {}, d.__new ? "New student" : d.name),
-      d.__new ? null : h("div", { style: "display:flex;gap:10px" },
-        h("button", { class: "btn small", onclick: () => { show("desk"); selectStudent(d.name); } }, "Open documents"),
-        h("button", { class: "btn small", onclick: () => openFeedback(d.name) }, "Log feedback"),
-        h("button", { class: "btn small", onclick: () => startPrep(todayISO(), [d.name]) }, "Prep today"))),
+      d.__new ? null : h("div", { style: "display:flex;gap:8px" },
+        h("button", { class: "btn small", onclick: () => { show("desk"); selectStudent(d.name); } }, "Open on desk"),
+        h("button", { class: "btn small", onclick: () => openFeedback(d.name) }, "Log feedback"))),
     h("div", { class: "fields" },
-      h("div", { class: "field wide" }, h("label", {}, "Name"), h("p", { class: "help" }, "Matched against calendar event titles."), input("name")),
-      h("div", { class: "field wide" }, h("label", {}, "Subject"), h("p", { class: "help" }, "Also sets how hard topics are pitched."),
-        input("subject", { list: "dl-subjects" }), h("datalist", { id: "dl-subjects" }, subjects.map((s) => h("option", { value: s })))),
+      h("div", { class: "field wide" }, h("label", {}, "Name"), input("name", { placeholder: "As it appears on your calendar" })),
+      h("div", { class: "field wide" }, h("label", {}, "Subject"),
+        input("subject", { list: "dl-subjects", placeholder: "e.g. SAT Math" }), h("datalist", { id: "dl-subjects" }, subjects.map((s) => h("option", { value: s })))),
       h("div", { class: "field" }, h("label", {}, "Status"), status),
-      h("div", { class: "field" }, h("span", { class: "lbl" }, "Homework"), h("label", { class: "toggle" }, hw, "Assign after sessions")),
-      h("div", { class: "field wide" }, h("label", {}, "Textbook override"), h("p", { class: "help" }, "Optional. Leave blank to use the subject's default book."), input("textbook", { placeholder: "e.g. Foerster-AT — Algebra and Trigonometry (Foerster)" })),
+      h("div", { class: "field" }, h("span", { class: "lbl" }, "Homework"), h("label", { class: "toggle" }, hw, "After each session")),
+      h("div", { class: "field wide" }, h("label", {}, "Textbook"), input("textbook", { placeholder: "The subject's default book" })),
       h("div", { class: "field full" }, h("span", { class: "lbl" }, "Cover next session"),
-        h("p", { class: "help" }, "Textbook topic names in priority order, written as Key §N-M: Topic Name. Prep teaches from the top."),
-        listEditor("coverNextSession", { queue: true, placeholder: "Add a topic" })),
-      h("div", { class: "field full" }, h("span", { class: "lbl" }, "Strengths"), h("p", { class: "help" }, "Currently true statements, not a dated log."), listEditor("strengths", { placeholder: "Add a strength" })),
-      h("div", { class: "field full" }, h("span", { class: "lbl" }, "Weaknesses"), h("p", { class: "help" }, "Also where standing instructions about this student live."), listEditor("weaknesses", { placeholder: "Add a weakness" }))),
+        h("p", { class: "help" }, "Prep teaches from the top."),
+        listEditor("coverNextSession", { queue: true, placeholder: "Add a topic, like Holt-A1 §4-3: Slope" })),
+      h("div", { class: "field full" }, h("span", { class: "lbl" }, "Strengths"), listEditor("strengths", { placeholder: "Add a strength" })),
+      h("div", { class: "field full" }, h("span", { class: "lbl" }, "Weaknesses"), listEditor("weaknesses", { placeholder: "Add a weakness" }))),
     h("div", { class: "editor-actions" },
       h("button", { class: "btn primary", id: "save-student", disabled: (!S.dirty || busy) ? true : undefined, onclick: saveStudent }, d.__new ? "Add student" : "Save changes"),
       S.dirty ? h("button", { class: "btn", onclick: () => { S.draft = null; S.dirty = false; renderStudents(); } }, "Discard") : null,
-      busy ? h("span", { class: "muted small" }, "Saving is paused while the agent works.") : null,
+      busy ? h("span", { class: "muted small" }, "You can save once the agent finishes.") : null,
       h("span", { class: "spacer" }),
-      d.__new ? null : h("button", { class: "btn danger", onclick: deleteStudent }, "Delete student"))));
+      d.__new ? null : h("button", { class: "btn ghost danger", onclick: deleteStudent }, "Delete student"))));
 }
 
 async function saveStudent() {
@@ -1102,12 +1173,12 @@ async function saveStudent() {
     S.dirty = false;
     await loadState();
     renderStudents();
-    toast("Saved to roster.json");
+    toast("Saved");
   } catch (e) { fail(e); }
 }
 
 async function deleteStudent() {
-  if (!confirm(`Remove ${S.student} from the roster? Their materials stay on disk.`)) return;
+  if (!confirm(`Delete ${S.student}? Their documents stay in your folder.`)) return;
   try {
     await api("DELETE", `/api/roster/student/${encodeURIComponent(S.student)}`);
     S.student = null; S.draft = null; S.dirty = false;
@@ -1128,7 +1199,7 @@ async function loadMaterials() {
   const days = data.days.map((d) => ({ ...d, files: d.files.filter((f) => !who || f.student === who),
     other: d.other.filter((f) => !who || f.student === who) })).filter((d) => d.files.length || d.other.length);
   if (!days.length) {
-    fill(box, h("p", { class: "muted small" }, "Nothing generated yet. Prep a session and its worksheets show up here, one folder per day."));
+    fill(box, h("p", { class: "side-empty" }, "Nothing yet. Prepped documents show up here."));
     return;
   }
   const order = Object.keys(TYPE_LABEL);
@@ -1142,8 +1213,8 @@ async function loadMaterials() {
         h("div", { class: "msn" }, name),
         g.files.sort((a, b) => order.indexOf(a.type.replace(/ /g, "_")) - order.indexOf(b.type.replace(/ /g, "_"))).map((f) =>
           h("div", { class: "mat-row" }, matButton(f, TYPE_LABEL[f.type.replace(/ /g, "_")] || f.type),
-            f.source ? h("button", { class: "link src", onclick: () => previewFile({ name: f.source.split("/").pop(), path: f.source, ext: ".txt" }) }, "source") : null)),
-        g.other.length ? h("div", { class: "muted small", style: "margin:4px 8px 0" }, "Kept in the app:") : null,
+            f.source ? h("button", { class: "link src", onclick: () => previewFile({ name: f.source.split("/").pop(), path: f.source, ext: ".txt" }) }, "text") : null)),
+        g.other.length ? h("div", { class: "muted small", style: "margin:6px 10px 0" }, "Other files") : null,
         g.other.map((f) => h("div", { class: "mat-row" }, matButton({ ...f, ext: "." + f.name.split(".").pop().toLowerCase() }, f.name))))));
   }));
 }
@@ -1162,8 +1233,8 @@ async function previewFile(f) {
   const inFolder = f.path.startsWith("material/");
   const bar = h("div", { class: "bar" },
     h("span", { class: "t" }, f.name),
-    h("a", { class: "btn small", href: fileUrl(f.path) + "?download=1", download: f.name }, "Download"),
-    inFolder ? h("button", { class: "btn small", onclick: () => api("POST", "/api/reveal", { path: f.path }).catch(fail) }, "Show in folder") : null);
+    inFolder ? h("button", { class: "btn small ghost", onclick: () => api("POST", "/api/reveal", { path: f.path }).catch(fail) }, "Show in folder") : null,
+    h("a", { class: "icon-btn", href: fileUrl(f.path) + "?download=1", download: f.name, title: "Download", "aria-label": "Download" }, icon("download")));
   if (f.ext === ".pdf") {
     fill(p, bar, h("iframe", { src: fileUrl(f.path), title: f.name }));
   } else if (/\.(png|jpe?g|gif|webp)$/i.test(f.path)) {
@@ -1181,24 +1252,24 @@ async function loadLibrary() {
   const { files, books, jobs } = S.library;
   const tbl = $("#tb-table");
   if (!files.length) {
-    fill(tbl, h("tbody", {}, h("tr", {}, h("td", { class: "muted" }, "No textbooks yet. Upload the PDFs your students' classes use, plus any books you like teaching from."))));
+    fill(tbl, h("tbody", {}, h("tr", {}, h("td", { class: "muted" }, "No textbooks yet."))));
   } else {
     fill(tbl, 
-      h("thead", {}, h("tr", {}, h("th", {}, "Book file"), h("th", {}, "Key"), h("th", {}, "Search index"), h("th", {}, "Size"), h("th", {}))),
+      h("thead", {}, h("tr", {}, h("th", {}, "Book"), h("th", {}, "Key"), h("th", {}, "Status"), h("th", {}, "Size"), h("th", {}))),
       h("tbody", {}, files.map((f) => {
         const job = jobs[f.file];
         let pill;
         if (job?.status === "running") pill = h("span", { class: "pill" }, "Indexing…");
         else if (job?.status === "error") pill = h("span", { class: "pill bad", title: job.detail }, "Indexing failed");
-        else if (f.indexed && f.quality === "none") pill = h("span", { class: "pill bad", title: "Scanned with no text layer — run OCR on it to make it searchable." }, "No text layer");
-        else if (f.indexed) pill = h("span", { class: "pill ok" }, f.quality === "good" ? "Indexed" : `Indexed (${f.quality} text)`);
-        else pill = h("span", { class: "pill" }, "Not yet");
+        else if (f.indexed && f.quality === "none") pill = h("span", { class: "pill bad", title: "Scanned with no text layer — run OCR on it to make it searchable." }, "No text");
+        else if (f.indexed) pill = h("span", { class: "pill ok", title: f.quality === "good" ? "" : `${f.quality} text quality` }, "Ready");
+        else pill = h("span", { class: "pill" }, "Not indexed");
         return h("tr", {},
           h("td", {}, h("a", { href: fileUrl(f.path), target: "_blank", rel: "noopener" }, f.file)),
-          h("td", {}, f.key || h("span", { class: "muted" }, "none yet")),
+          h("td", {}, f.key || h("span", { class: "muted" }, "—")),
           h("td", {}, pill),
           h("td", { class: "muted" }, `${f.sizeMB} MB`),
-          h("td", {}, !f.indexed && job?.status !== "running" ? h("button", { class: "btn small", onclick: () => indexBook(f.file) }, "Index now") : null));
+          h("td", {}, !f.indexed && job?.status !== "running" ? h("button", { class: "btn small", onclick: () => indexBook(f.file) }, "Index") : null));
       })));
   }
   clearTimeout(libTimer);
@@ -1221,11 +1292,11 @@ function paintDefaults(books) {
         h("td", {}, cellInput(r.subject, (v) => (r.subject = v))),
         h("td", {}, cellInput(r.books.join(", "), (v) => (r.books = v.split(",").map((x) => x.trim()).filter(Boolean)))),
         h("td", {}, cellInput(r.note || "", (v) => (r.note = v))),
-        h("td", {}, h("button", { class: "link danger", onclick: () => { rows.splice(i, 1); paint(); } }, "Remove")))))),
-    h("div", { style: "display:flex;gap:10px;margin-top:10px" },
+        h("td", { style: "width:44px" }, h("button", { class: "icon-btn", title: "Remove", "aria-label": `Remove ${r.subject || "row"}`, onclick: () => { rows.splice(i, 1); paint(); } }, icon("x"))))))),
+    h("div", { class: "table-actions" },
       h("button", { class: "btn small", onclick: () => { rows.push({ subject: "", books: [], note: "" }); paint(); } }, "Add subject"),
       h("button", { class: "btn small primary", onclick: async () => {
-        try { await api("PUT", "/api/books", { subjectDefaults: rows.filter((r) => r.subject.trim()) }); toast("Saved to books.json"); loadLibrary(); } catch (e) { fail(e); }
+        try { await api("PUT", "/api/books", { subjectDefaults: rows.filter((r) => r.subject.trim()) }); toast("Saved"); loadLibrary(); } catch (e) { fail(e); }
       } }, "Save")));
   paint();
 }
@@ -1234,20 +1305,20 @@ function paintKeys(books) {
   const rows = books.books.map((b) => ({ ...b }));
   const box = $("#book-keys");
   if (!rows.length) {
-    fill(box, h("p", { class: "muted small" }, "None yet — the agent adds a key the first time it cites a book."));
+    fill(box, h("p", { class: "muted small" }, "None yet. The agent adds one the first time it uses a book."));
     return;
   }
   fill(box, 
     h("table", { class: "table" },
-      h("thead", {}, h("tr", {}, h("th", {}, "Key"), h("th", {}, "Title"), h("th", {}, "Author"), h("th", {}, "File name starts with"), h("th", {}, "Notes for the agent"))),
+      h("thead", {}, h("tr", {}, h("th", {}, "Key"), h("th", {}, "Title"), h("th", {}, "Author"), h("th", {}, "File name starts with"), h("th", {}, "Notes"))),
       h("tbody", {}, rows.map((r) => h("tr", {},
         h("td", {}, h("strong", {}, r.key)),
         h("td", {}, cellInput(r.title || "", (v) => (r.title = v))),
         h("td", {}, cellInput(r.author || "", (v) => (r.author = v))),
         h("td", {}, cellInput(r.filePrefix || "", (v) => (r.filePrefix = v))),
         h("td", {}, cellInput(r.notes || "", (v) => (r.notes = v))))))),
-    h("div", { style: "margin-top:10px" }, h("button", { class: "btn small primary", onclick: async () => {
-      try { await api("PUT", "/api/books", { books: rows }); toast("Saved to books.json"); loadLibrary(); } catch (e) { fail(e); }
+    h("div", { class: "table-actions" }, h("button", { class: "btn small primary", onclick: async () => {
+      try { await api("PUT", "/api/books", { books: rows }); toast("Saved"); loadLibrary(); } catch (e) { fail(e); }
     } }, "Save")));
 }
 
@@ -1266,11 +1337,19 @@ async function loadQuestions() {
   const c = $("#oq-count");
   c.hidden = !n;
   c.textContent = n;
+  const tab = $("#tab-questions");
+  const was = tab.hidden;
+  tab.hidden = !n && S.view !== "questions";
+  if (was !== tab.hidden) moveNavHl();
   if (S.view !== "questions") return;
   const body = $("#oq-body");
   const rendered = md(S.oq, { breaks: false });
   const firstH1 = rendered.querySelector("h1");
-  if (firstH1 && /open questions/i.test(firstH1.textContent)) firstH1.remove();
+  if (firstH1 && /open questions/i.test(firstH1.textContent)) {
+    firstH1.remove();
+    // The file's intro is for the agent; the page's own subtitle covers it.
+    while (rendered.firstElementChild?.tagName === "P") rendered.firstElementChild.remove();
+  }
   // An "Answer" link on each open numbered item.
   let resolved = false;
   for (const el of [...rendered.children]) {
@@ -1299,7 +1378,7 @@ function editQuestions() {
   ta.value = S.oq;
   openDialog([
     h("h2", {}, "Edit open questions"),
-    h("p", { class: "sub" }, "This is open-questions.md in your workspace."),
+    h("p", { class: "sub" }, "open-questions.md in your folder"),
     ta,
     h("div", { class: "dialog-actions" },
       h("button", { class: "btn", onclick: closeDialog }, "Cancel"),
@@ -1321,16 +1400,16 @@ function timezoneSelect(value) {
 function calendarHelp() {
   return h("details", { class: "small" }, h("summary", { class: "muted", style: "cursor:pointer" }, "Where do I find this link?"),
     h("ol", { class: "steps-help" },
-      h("li", {}, h("strong", {}, "Google Calendar: "), "on a computer, open Settings, click the calendar under “Settings for my calendars”, then copy “Secret address in iCal format” from the Integrate calendar section. Tip: keep tutoring on its own calendar so nothing else shows up."),
-      h("li", {}, h("strong", {}, "Apple Calendar (iCloud): "), "right-click the calendar, choose Share Calendar, tick Public Calendar, and copy the link."),
-      h("li", {}, h("strong", {}, "Outlook: "), "Settings, Calendar, Shared calendars, Publish a calendar, then copy the ICS link.")),
-    h("p", { class: "muted small" }, "The link is private — anyone who has it can read that calendar. It stays on this computer."));
+      h("li", {}, h("strong", {}, "Google: "), "Settings → your calendar → Integrate calendar → Secret address in iCal format."),
+      h("li", {}, h("strong", {}, "Apple: "), "right-click the calendar → Share Calendar → Public Calendar."),
+      h("li", {}, h("strong", {}, "Outlook: "), "Settings → Calendar → Shared calendars → Publish a calendar.")),
+    h("p", { class: "muted small" }, "Keep the link private. It stays on this computer."));
 }
 
 function calendarFields(cfg, onTest) {
   const url = h("input", { type: "url", placeholder: "https://calendar.google.com/calendar/ical/…/basic.ics" });
   url.value = cfg.calendar.icsUrl;
-  const filter = h("input", { type: "text", placeholder: "Optional, e.g. tutoring" });
+  const filter = h("input", { type: "text", placeholder: "Optional, like “tutoring”" });
   filter.value = cfg.calendar.filter;
   const result = h("div", { class: "test-result" });
   const test = h("button", { class: "btn", onclick: async () => {
@@ -1347,7 +1426,7 @@ function calendarFields(cfg, onTest) {
   } }, "Test link");
   return { url, filter, el: h("div", { class: "fields" },
     h("div", { class: "field full" }, h("label", {}, "Calendar link (iCal / ICS)"), url, calendarHelp()),
-    h("div", { class: "field" }, h("label", {}, "Only events containing"), h("p", { class: "help" }, "Leave empty if the calendar is only for tutoring."), filter),
+    h("div", { class: "field" }, h("label", {}, "Only events containing"), filter),
     h("div", { class: "field", style: "justify-content:flex-end;align-items:flex-start" }, test),
     h("div", { class: "field full" }, result)) };
 }
@@ -1372,12 +1451,12 @@ async function renderSettings() {
   const apOnly = h("input", { type: "checkbox", checked: cfg.autoPrep.onlyWhenSessions ? true : undefined });
   const dayBoxes = DAY_NAMES.map((d, i) => h("label", {}, h("input", { type: "checkbox", value: i, checked: cfg.autoPrep.days.includes(i) ? true : undefined }), d));
   const model = h("select", {},
-    [["", "Claude Code's default"], ["opus", "Opus (best worksheets, uses more of your plan)"], ["sonnet", "Sonnet (faster, lighter on usage)"]]
+    [["", "Default"], ["opus", "Opus (best quality)"], ["sonnet", "Sonnet (lighter on usage)"]]
       .map(([v, l]) => h("option", { value: v, selected: cfg.model === v ? true : undefined }, l)),
     cfg.model && !["opus", "sonnet"].includes(cfg.model) ? h("option", { value: cfg.model, selected: true }, cfg.model) : null);
   const shell = h("select", {},
-    h("option", { value: "standard", selected: cfg.shellAccess !== "full" ? true : undefined }, "Standard — Python, LaTeX and file commands only"),
-    h("option", { value: "full", selected: cfg.shellAccess === "full" ? true : undefined }, "Full — any command, without asking"));
+    h("option", { value: "standard", selected: cfg.shellAccess !== "full" ? true : undefined }, "Standard (Python and files)"),
+    h("option", { value: "full", selected: cfg.shellAccess === "full" ? true : undefined }, "Full (any command)"));
   const checksBox = h("div", {}, h("p", { class: "muted small" }, "Checking…"));
   const runChecks = async (full) => {
     fill(checksBox, h("p", { class: "muted small" }, full ? "Compiling a test worksheet…" : "Checking…"));
@@ -1392,38 +1471,38 @@ async function renderSettings() {
         days: dayBoxes.map((l) => l.querySelector("input")).filter((i) => i.checked).map((i) => Number(i.value)) },
       model: model.value, shellAccess: shell.value,
     };
-    try { await api("PUT", "/api/config", body); await loadState(); toast("Settings saved"); } catch (e) { fail(e); }
+    try { await api("PUT", "/api/config", body); await loadState(); toast("Saved"); } catch (e) { fail(e); }
   };
   fill(box, 
-    h("div", { class: "page-head" }, h("div", {}, h("h1", {}, "Settings"), h("p", { class: "lede" }, `Workspace: ${S.state.workspace}`)),
+    h("div", { class: "page-head" }, h("div", {}, h("h1", {}, "Settings"), h("p", { class: "lede small" }, S.state.workspace)),
       h("button", { class: "btn", onclick: () => api("POST", "/api/reveal", {}).catch(fail) }, "Show folder")),
-    S.state.specUpdate ? h("div", { class: "card" }, h("h2", {}, "Updated agent instructions available"),
-      h("p", { class: "muted" }, "You've edited CLAUDE.md, so the app saved its newer version as CLAUDE.md.new instead of overwriting yours. Merge by hand, or replace yours."),
+    S.state.specUpdate ? h("div", { class: "card" }, h("h2", {}, "New agent rules available"),
+      h("p", { class: "muted" }, "You've edited CLAUDE.md, so the new version is in CLAUDE.md.new."),
       h("button", { class: "btn danger", onclick: async () => {
         if (!confirm("Replace your CLAUDE.md with the new version? Your edits will be lost.")) return;
         try { await api("POST", "/api/workspace/sync", { forceSpec: true }); await loadState(); renderSettings(); toast("CLAUDE.md replaced"); } catch (e) { fail(e); }
       } }, "Use the new CLAUDE.md")) : null,
-    h("div", { class: "card" }, h("h2", {}, "You"), h("p", { class: "muted" }, "Times on your calendar and the agent's idea of “today” use this timezone."),
+    h("div", { class: "card" }, h("h2", {}, "You"),
       h("div", { class: "fields" },
         h("div", { class: "field" }, h("label", {}, "Your name"), name),
         h("div", { class: "field" }, h("label", {}, "Timezone"), tzSel))),
-    h("div", { class: "card" }, h("h2", {}, "Calendar"), h("p", { class: "muted" }, "Sessions and their lengths come from here. The app re-reads it every 15 minutes and right before each run."), cal.el),
+    h("div", { class: "card" }, h("h2", {}, "Calendar"), h("p", { class: "muted" }, "Your sessions come from here."), cal.el),
     h("div", { class: "card" }, h("h2", {}, "Daily prep"),
-      h("p", { class: "muted" }, "Preps every session on the day automatically. The app starts by itself when you log in; if the computer was asleep at prep time, it catches up when it wakes."),
+      h("p", { class: "muted" }, "Preps the day's sessions on its own, even if your computer was asleep."),
       h("div", { class: "fields" },
         h("div", { class: "field full" }, h("label", { class: "toggle" }, apOn, "Prep automatically")),
         h("div", { class: "field" }, h("label", {}, "At"), apTime),
         h("div", { class: "field" }, h("span", { class: "lbl" }, "On"), h("div", { class: "days-pick" }, dayBoxes)),
         h("div", { class: "field full" }, h("label", { class: "toggle" }, apOnly, "Skip days with no sessions")))),
     h("div", { class: "card" }, h("h2", {}, "Claude"),
-      h("p", { class: "muted" }, "The agent runs on Claude Code on this computer, signed in with your own Claude account (or an API key if you set one). The app never sees your credentials."),
+      h("p", { class: "muted" }, "Runs on your own Claude account."),
       h("div", { class: "fields" },
         h("div", { class: "field" }, h("label", {}, "Model"), model),
         h("div", { class: "field" }, h("label", {}, "Shell access"), shell))),
     h("div", { class: "editor-actions", style: "position:static;background:none;padding:0 0 18px" }, h("button", { class: "btn primary", onclick: save }, "Save settings")),
     h("div", { class: "card" }, h("div", { class: "side-head" }, h("h2", {}, "Health check"),
-      h("span", {}, h("button", { class: "link", onclick: () => runChecks(false) }, "Re-check"), "   ",
-        h("button", { class: "link", onclick: () => runChecks(true) }, "Compile a test worksheet"))), checksBox));
+      h("span", { style: "display:flex;gap:16px" }, h("button", { class: "link", onclick: () => runChecks(false) }, "Check again"),
+        h("button", { class: "link", onclick: () => runChecks(true) }, "Test a worksheet"))), checksBox));
   runChecks(false);
 }
 
@@ -1442,9 +1521,9 @@ function openSetup() {
   const importPath = h("input", { type: "text", placeholder: "/Users/you/Claude/Projects/my-tutoring-folder" });
   const importOut = h("div", { class: "test-result" });
   const importBox = students().length ? null : h("details", { class: "small", style: "margin-top:14px" },
-    h("summary", { class: "muted", style: "cursor:pointer" }, "Bring over an existing tutoring folder"),
+    h("summary", { class: "muted", style: "cursor:pointer" }, "Import an existing tutoring folder"),
     h("div", { class: "fields", style: "margin-top:10px" },
-      h("div", { class: "field full" }, h("p", { class: "help" }, "A folder with CLAUDE.md and roster.json. It's copied; the original isn't changed."), importPath),
+      h("div", { class: "field full" }, h("p", { class: "help" }, "A folder with CLAUDE.md and roster.json. It's copied, not moved."), importPath),
       h("div", { class: "field full" }, h("button", { class: "btn small", onclick: async () => {
         importOut.textContent = "Copying… (textbooks can take a minute)";
         try {
@@ -1466,21 +1545,19 @@ function openSetup() {
       closeDialog();
       await loadState();
       renderThread();
-      toast("All set. Settings has everything if you need to change it later.");
+      toast("You're all set");
     } catch (e) { fail(e); done.disabled = false; }
   } }, "Finish setup");
   const dlg = openDialog([
-    h("h2", {}, "Finish setting up"),
-    h("p", { class: "sub" }, "Claude Code, LaTeX and your workspace are ready. Two things only you know:"),
+    h("h2", {}, "Welcome to TutorAssist"),
+    h("p", { class: "sub" }, "A few details and you're ready."),
     h("div", { class: "fields" },
       h("div", { class: "field" }, h("label", {}, "Your name"), name),
       h("div", { class: "field" }, h("label", {}, "Timezone"), tzSel)),
     h("div", { style: "margin-top:16px" }, cal.el),
-    h("label", { class: "toggle", style: "margin-top:4px" }, autoOn, "Prep every session automatically each morning at ", autoTime),
+    h("label", { class: "toggle", style: "margin-top:4px" }, autoOn, "Prep each morning at ", autoTime),
     importBox,
-    h("div", { class: "dialog-actions" },
-      h("span", { class: "muted small" }, "You can skip the calendar and add it later in Settings."),
-      h("span", { class: "spacer" }), done),
+    h("div", { class: "dialog-actions" }, done),
   ], "wide");
   dlg.classList.add("setup");
 }
@@ -1493,19 +1570,24 @@ async function checkHealth() {
   const box = $("#health");
   if (!bad.length) { box.hidden = true; return; }
   box.hidden = false;
-  fill(box, h("strong", {}, "Prep won't work until this is fixed: "),
+  fill(box, h("strong", {}, "Prep can't run yet. "),
     bad.map((c) => h("span", { class: "issue" }, `${c.label}: ${c.detail} `, c.fix ? h("code", {}, c.fix) : null)),
-    h("span", { class: "muted" }, " Run that in Terminal, then reload this page."));
+    h("span", { class: "muted" }, " Run that in Terminal, then reload."));
 }
 
 /* ------------------------------------------------------------------ boot */
 function wire() {
   $$(".tabs button").forEach((b) => b.addEventListener("click", () => show(b.dataset.view)));
   $("#btn-prep-today").addEventListener("click", () => startPrep(todayISO()));
-  $("#btn-feedback").addEventListener("click", () => openFeedback());
-  $("#btn-refresh-cal").addEventListener("click", async () => {
-    try { S.state.schedule = await api("POST", "/api/schedule/refresh"); renderSchedule(); toast("Calendar refreshed"); } catch (e) { fail(e); }
+  // With a student open, feedback is for them and the session on screen.
+  $("#btn-feedback").addEventListener("click", () => openFeedback(S.focus?.student, S.focus?.date || undefined));
+  $("#btn-refresh-cal").addEventListener("click", async (e) => {
+    const b = e.currentTarget;
+    b.classList.remove("spin"); void b.offsetWidth; b.classList.add("spin");
+    try { S.state.schedule = await api("POST", "/api/schedule/refresh"); renderSchedule(); if (!S.conv) renderThread(); } catch (err) { fail(err); }
   });
+  window.addEventListener("resize", moveNavHl);
+  document.fonts?.ready.then(moveNavHl);
   $("#btn-add-session").addEventListener("click", openAddSession);
   $("#btn-new-conv").addEventListener("click", () => newConversation());
   $("#viewer-close").addEventListener("click", closeViewer);
@@ -1516,8 +1598,8 @@ function wire() {
     const files = [...e.target.files];
     e.target.value = "";
     if (!files.length) return;
-    toast(`Uploading ${files.length} file${files.length > 1 ? "s" : ""}…`);
-    try { await upload("/api/library/upload", files); toast("Uploaded — indexing in the background"); loadLibrary(); } catch (err) { fail(err); }
+    toast(`Uploading ${files.length} book${files.length > 1 ? "s" : ""}…`);
+    try { await upload("/api/library/upload", files); toast("Uploaded. Indexing now"); loadLibrary(); } catch (err) { fail(err); }
   });
   $("#overlay").addEventListener("click", (e) => { if (e.target.id === "overlay" && !$("#overlay .setup")) closeDialog(); });
   document.addEventListener("keydown", (e) => {
@@ -1531,6 +1613,7 @@ function wire() {
 
 (async function boot() {
   wire();
+  moveNavHl();
   try {
     await loadState();
   } catch (e) {
