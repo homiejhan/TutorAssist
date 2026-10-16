@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+# tests
+.fake_last_args.json
+# macOS
+.DS_Store
+# never commit a tutor's workspace data (e.g. a workspace opened inside this folder)
+material/
+uploads/
+.work/
+.tutor/
+.textbook_index/
+roster.json
+!tutorassist/template/roster.json
+schedule.json

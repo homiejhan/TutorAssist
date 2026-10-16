@@ -1,0 +1,67 @@
+Linear Functions Review
+Graphs and Tables
+
+Problem 1. Complete the table of values for $y = 2x - 1$, then graph the line.
+| $x$ | $-1$ | $0$ | $1$ | $2$ |
+| $y$ |      |     |     |     |
+[graph]
+x: -5 to 5
+y: -5 to 5
+[/graph]
+
+Problem 2. Which graph shows the solutions of $y \le -x + 2$?
+
+[graph]
+title: A)
+size: small
+x: -5 to 5
+y: -5 to 5
+y <= -x + 2
+[/graph]
+
+[graph]
+title: B)
+size: small
+x: -5 to 5
+y: -5 to 5
+y < -x + 2
+[/graph]
+
+[graph]
+title: C)
+size: small
+x: -5 to 5
+y: -5 to 5
+y >= -x + 2
+[/graph]
+
+*Problem 3. The graph of $f$ is shown.
+[graph]
+x: -4 to 6
+y: -2 to 6
+y = x + 3 for -3 <= x < 0 [label: $f$]
+y = -x + 4 for 0 <= x <= 4
+[/graph]
+(a) Find $f(0)$.
+(b) What is the range of $f$?
+
+Problem 4. A gym charges a \$25 sign-up fee plus \$15 per month.
+| Months ($m$) | Total cost ($C$) |
+|:------------:|:----------------:|
+| 1            | \$40             |
+| 3            |                  |
+| 6            |                  |
+(a) Complete the table.
+(b) Write an equation for $C$ in terms of $m$.
+
+Answer Key
+1. The $y$-values are $-3, -1, 1, 3$.
+[graph]
+x: -5 to 5
+y: -5 to 5
+y = 2x - 1
+points (-1, -3) (0, -1) (1, 1) (2, 3)
+[/graph]
+2. A — the boundary is solid because the inequality includes equality, and the shading is below the line.
+3. (a) $f(0) = 4$ (the closed dot is on the right piece). (b) $0 \le y \le 4$
+4. (a) \$70 and \$115 (b) $C = 25 + 15m$

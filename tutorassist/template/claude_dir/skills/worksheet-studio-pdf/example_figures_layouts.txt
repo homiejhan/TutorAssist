@@ -1,0 +1,81 @@
+Geometry and Equations Practice
+Figures and compact layouts
+
+[grid 4, space: compact]
+1. $x + 7 = 12$
+2. $3x = 21$
+3. $\frac{x}{4} = 5$
+4. $2x + 3 = 11$
+5. $5x - 4 = 16$
+6. $\frac{x}{3} + 2 = 6$
+7. $-4x + 1 = 13$
+8. $3(x + 2) = 18$
+[/grid]
+
+Problem 9. In triangle $ABC$, find the value of $x$.
+[figure]
+triangle ABC AB=8 angle A=50 angle B=60
+side AB 8 cm
+angle A 50°
+angle B 60°
+angle C $x^\circ$
+[/figure]
+
+Problem 10. $ABCD$ is a parallelogram. Find $y$.
+[figure]
+parallelogram ABCD base 7 side 4 angle 65
+side AB [parallel: 1]
+side DC [parallel: 1]
+side AD [parallel: 2]
+side BC [parallel: 2]
+angle A 65°
+angle C $(2y + 5)^\circ$
+[/figure]
+
+Problem 11. Find the height $h$ and the area of the trapezoid.
+[figure]
+trapezoid ABCD bottom 10 top 6 height 4
+point E foot D A B
+segment D E [dashed]
+right angle DEA
+side DE $h$
+side AB 10
+side DC 6
+side AD $2\sqrt{5}$
+[/figure]
+
+[columns 2]
+12. $\overline{AB} \cong \overline{BC}$. Name the congruent angles.
+[figure]
+size: small
+triangle ABC AB=5 BC=5 CA=6
+side AB [ticks: 1]
+side BC [ticks: 1]
+angle A [arcs: 2]
+angle C [arcs: 2]
+[/figure]
+13. Find the length of the hypotenuse.
+[figure]
+size: small
+right triangle PQR legs 6 8
+right angle PQR
+side PQ 6
+side QR 8
+side PR $c$
+[/figure]
+[/columns]
+
+Answer Key
+1. $x = 5$
+2. $x = 7$
+3. $x = 20$
+4. $x = 4$
+5. $x = 4$
+6. $x = 12$
+7. $x = -3$
+8. $x = 4$
+9. $x = 180 - 50 - 60 = 70$
+10. Opposite angles are congruent: $2y + 5 = 65$, so $y = 30$.
+11. $h = \sqrt{(2\sqrt{5})^2 - 2^2} = 4$; area $= \frac{1}{2}(10 + 6)(4) = 32$
+12. $\angle A \cong \angle C$
+13. $c = \sqrt{6^2 + 8^2} = 10$

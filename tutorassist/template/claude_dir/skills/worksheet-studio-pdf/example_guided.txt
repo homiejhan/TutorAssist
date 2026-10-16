@@ -1,0 +1,54 @@
+Guided Notes: Two-Step Equations
+Algebra I · Lesson 2.3
+[settings density: normal, spacing: compact, part-spacing: standard]
+
+Problem 1. **Undoing operations in reverse order**
+
+[box: Key idea]
+A *two-step equation* has two operations on the variable. To solve it, undo them in the reverse of the order they were done ("last done, first undone"):
+(1) Undo the addition or subtraction.
+(2) Undo the multiplication or division.
+(3) Check by substituting your answer into the original equation.
+[/box]
+
+> **Vocabulary.** The *coefficient* is the number multiplying the variable; the *constant* is the number standing alone.
+
+**Example A.** Solve $3x + 5 = 20$.
+Step 1. Subtract $5$ from both sides:
+  $$3x = 15$$
+Step 2. Divide both sides by $3$:
+  $$x = 5$$
+Step 3. Check: $3(5) + 5 = 15 + 5 = 20$ $\checkmark$
+
+[box red: Common mistake]
+Dividing first: $\frac{3x + 5}{3}$ is **not** $x + 5$ — the $5$ must be divided by $3$ too. Undo the $+5$ first.
+[/box]
+
+**Now you try.**
+(a) Solve $4x - 7 = 21$.
+(b) Solve $\frac{x}{2} + 3 = 11$.
+
+Problem 2. **Equations with a negative coefficient**
+
+## Watch the sign
+- A negative coefficient stays attached to the variable when you divide.
+- Dividing both sides by a negative number flips each sign.
+
+**Example B.** Solve $-2x + 9 = 1$. \\
+Subtract $9$: $-2x = -8$. \\
+Divide by $-2$: $x = 4$.
+
+---
+
+**Now you try.**
+(a) Solve $-5x + 2 = 27$.
+[space large]
+(b) Explain in one sentence why you subtract before you divide.
+[lines 3]
+[workspace none]
+
+Answer Key
+1. (a) $4x = 28$, so $x = 7$.
+(b) $\frac{x}{2} = 8$, so $x = 16$.
+2. (a) $-5x = 25$, so $x = -5$.
+(b) Subtraction was done last to $x$ (after multiplying), so it is undone first.

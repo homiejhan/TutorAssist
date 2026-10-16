@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tutorassist"
+version = "0.3.0"
+description = "A local web app that preps tutoring sessions with Claude Code: worksheets, evals, grading, and a live student roster."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+  "python-multipart>=0.0.9",
+  "icalendar>=5.0",
+  "recurring-ical-events>=2.2",
+  "pymupdf>=1.24",
+  "sympy>=1.12",
+  "tzdata",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[project.scripts]
+tutor = "tutorassist.cli:main"
+tutorassist = "tutorassist.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tutorassist"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

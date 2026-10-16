@@ -1,0 +1,286 @@
+SAT Math Practice — Module A
+27 Questions · 35 Minutes · Calculator permitted · Questions without answer choices are student-produced responses
+
+Problem 1. If $5(x - 2) = 3x + 8$, what is the value of $x$?
+
+A) $-1$
+
+B) $3$
+
+C) $9$
+
+D) $18$
+
+Problem 2. A right circular cylinder has a radius of 3 centimeters and a height of 10 centimeters. What is the volume, in cubic centimeters, of the cylinder?
+
+A) $30\pi$
+
+B) $60\pi$
+
+C) $90\pi$
+
+D) $180\pi$
+
+Problem 3. The function $T$ is defined by $T(h) = 68 - 3h$, where $T(h)$ is the temperature, in degrees Fahrenheit, of a greenhouse $h$ hours after noon. Which of the following is the best interpretation of the number 3 in this context?
+
+A) The temperature of the greenhouse at noon is $3$ degrees Fahrenheit.
+
+B) The temperature of the greenhouse decreases by $3$ degrees Fahrenheit each hour after noon.
+
+C) The temperature of the greenhouse increases by $3$ degrees Fahrenheit each hour after noon.
+
+D) It takes $3$ hours for the temperature of the greenhouse to reach $68$ degrees Fahrenheit.
+
+Problem 4. In the $xy$-plane, the graph of the equation $4x - 3y = 24$ has an $x$-intercept at $(a, 0)$. What is the value of $a$?
+
+Problem 5. If $3x^2 = 75$ and $x > 0$, what is the value of $x$?
+
+A) $5$
+
+B) $\sqrt{75}$
+
+C) $15$
+
+D) $25$
+
+Problem 6. The functions $f$ and $g$ are defined by $f(x) = 3x - 4$ and $g(x) = x + 6$. What is the value of $f(5) - g(2)$?
+
+A) $1$
+
+B) $3$
+
+C) $4$
+
+D) $19$
+
+Problem 7. The system of equations $y = 2x - 1$ and $3x + y = 14$ has the solution $(x, y)$. What is the value of $x + y$?
+
+A) $3$
+
+B) $5$
+
+C) $8$
+
+D) $15$
+
+Problem 8. The expression $(2x + 3)(x - 4)$ is equivalent to $2x^2 + bx - 12$, where $b$ is a constant. What is the value of $b$?
+
+Problem 9. A jacket has an original price of \$80. The jacket is sold at a $25\%$ discount, and then an $8\%$ sales tax is applied to the discounted price. What is the total cost, in dollars, of the jacket after the discount and tax?
+
+A) \$60.00
+
+B) \$62.40
+
+C) \$64.80
+
+D) \$66.40
+
+Problem 10. Which point $(x, y)$ is a solution to the system of inequalities $y \ge -2x + 5$ and $y < x + 1$ in the $xy$-plane?
+
+A) $(0, 0)$
+
+B) $(1, 3)$
+
+C) $(2, 2)$
+
+D) $(4, 6)$
+
+Problem 11. The population of a town was $2{,}400$ at the start of $2020$, and it increases by $6\%$ each year. Which function $P$ gives the population of the town $t$ years after the start of $2020$?
+
+A) $P(t) = 2400 + 1.06t$
+
+B) $P(t) = 2400(0.06)^t$
+
+C) $P(t) = 2400(1.06)^t$
+
+D) $P(t) = 2400(1.6)^t$
+
+Problem 12. The scatterplot shows the relationship between the number of hours $x$ a student spent studying and the student's score $y$ on a quiz. A line of best fit is also shown.
+[graph]
+x: 0 to 20
+y: 0 to 70
+xstep: 2
+ystep: 10
+xlabel: Hours studied
+ylabel: Quiz score
+size: large
+points (2, 16) (4, 19) (6, 27) (8, 28) (10, 37) (12, 38) (14, 47) (16, 49) (18, 57)
+y = 2.5x + 10 for 0 <= x <= 20 [navy]
+[/graph]
+For a student who studied for $14$ hours, which of the following is closest to the quiz score predicted by the line of best fit?
+
+A) $40$
+
+B) $45$
+
+C) $47$
+
+D) $50$
+
+Problem 13. The table gives three values of $x$ and their corresponding values of $f(x)$ for the linear function $f$.
+| $x$ | $f(x)$ |
+|:---:|:------:|
+| $1$ | $11$ |
+| $3$ | $5$ |
+| $5$ | $-1$ |
+What is the value of $f(8)$?
+
+Problem 14. Triangle $ABC$ is similar to triangle $DEF$, where $A$ corresponds to $D$ and $B$ corresponds to $E$. The length of $\overline{AB}$ is $6$, the length of $\overline{BC}$ is $9$, and the length of $\overline{DE}$ is $10$. What is the length of $\overline{EF}$?
+
+A) $12$
+
+B) $13$
+
+C) $15$
+
+D) $18$
+
+Problem 15. In the $xy$-plane, the graph of $y = x + 3$ intersects the graph of $y = x^2 - 3x + 6$ at two points. Which of the following is one of these points?
+
+A) $(1, 3)$
+
+B) $(2, 4)$
+
+C) $(3, 6)$
+
+D) $(4, 7)$
+
+Problem 16. Line $\ell$ is shown in the $xy$-plane. Line $m$ (not shown) is parallel to line $\ell$ and passes through the point $(0, 4)$. Which equation represents line $m$?
+[graph]
+x: -4 to 8
+y: -4 to 8
+line (2, -1) (6, 7) [navy, label: $\ell$]
+point (2, -1)
+point (6, 7)
+text (3.6, -1.6) $(2, -1)$
+text (7.2, 6.4) $(6, 7)$
+[/graph]
+
+A) $y = 2x + 4$
+
+B) $y = -\frac{1}{2}x + 4$
+
+C) $y = 2x - 5$
+
+D) $y = 4x + 2$
+
+Problem 17. The function $f$ is defined by $f(x) = x^2 - 10x + 31$. What is the minimum value of $f(x)$?
+
+Problem 18. The table shows the number of books read last summer by each of the $20$ students in a class.
+| Number of books | Number of students |
+|:---------------:|:------------------:|
+| $2$ | $3$ |
+| $3$ | $5$ |
+| $4$ | $6$ |
+| $5$ | $4$ |
+| $12$ | $2$ |
+Which of the following statements about the mean and the median of the number of books read is true?
+
+A) The mean is greater than the median.
+
+B) The mean is less than the median.
+
+C) The mean is equal to the median.
+
+D) The relationship between the mean and the median cannot be determined from the table.
+
+Problem 19. In the $xy$-plane, the equation $x^2 + y^2 - 6x + 4y - 12 = 0$ represents a circle. What is the radius of the circle?
+
+A) $\sqrt{12}$
+
+B) $5$
+
+C) $12$
+
+D) $25$
+
+Problem 20. The system of equations $3x - ky = 7$ and $6x - 10y = 15$, where $k$ is a constant, has no solution. What is the value of $k$?
+
+A) $-5$
+
+B) $2$
+
+C) $5$
+
+D) $10$
+
+Problem 21. Which expression is equivalent to $\dfrac{x^2 - 4x - 21}{x^2 - 49}$, where $x \ne 7$ and $x \ne -7$?
+
+A) $\dfrac{x + 3}{x + 7}$
+
+B) $\dfrac{x - 3}{x - 7}$
+
+C) $\dfrac{x + 3}{x - 7}$
+
+D) $\dfrac{4x + 21}{49}$
+
+Problem 22. The table summarizes the results of a survey in which $200$ students at a school were asked whether they prefer a morning or an afternoon exam session.
+| | Prefers morning | Prefers afternoon | Total |
+|:---|:---:|:---:|:---:|
+| Grade 11 | $48$ | $62$ | $110$ |
+| Grade 12 | $54$ | $36$ | $90$ |
+| Total | $102$ | $98$ | $200$ |
+If a student who prefers the morning session is selected at random, what is the probability that the selected student is in grade 12?
+
+Problem 23. In right triangle $ABC$, angle $C$ is the right angle and $\sin A = \dfrac{5}{13}$. What is the value of $\tan B$?
+
+A) $\dfrac{5}{13}$
+
+B) $\dfrac{5}{12}$
+
+C) $\dfrac{12}{13}$
+
+D) $\dfrac{12}{5}$
+
+Problem 24. In the equation $4x^2 + kx + 25 = 0$, $k$ is a negative constant. If the equation has exactly one real solution, what is the value of $k$?
+
+A) $-40$
+
+B) $-20$
+
+C) $-10$
+
+D) $20$
+
+Problem 25. For the exponential function $g$, the value of $g(x)$ increases by the same percentage for each increase in $x$ by $1$. If $g(1) = 12$ and $g(3) = 108$, what is the value of $g(0)$?
+
+Problem 26. A landscaper mows lawns and trims hedges. Mowing one lawn takes $1.5$ hours and pays \$45, and trimming one hedge takes $2.5$ hours and pays \$70. The landscaper can work at most $40$ hours this week and wants to earn at least \$1,000. If $m$ is the number of lawns mowed and $h$ is the number of hedges trimmed, which system of inequalities represents this situation?
+
+A) $1.5m + 2.5h \le 40$ and $45m + 70h \ge 1000$
+
+B) $1.5m + 2.5h \ge 40$ and $45m + 70h \le 1000$
+
+C) $1.5m + 2.5h \le 40$ and $45m + 70h \le 1000$
+
+D) $45m + 70h \le 40$ and $1.5m + 2.5h \ge 1000$
+
+Problem 27. In the $xy$-plane, the graph of $y = x^2 - 6x + c$, where $c$ is a constant, intersects the $x$-axis at the points $(p, 0)$ and $(q, 0)$, where $q - p = 4$. What is the value of $c$?
+
+Answer Key
+1. C — [Algebra: Linear equations in one variable] Distribute: $5x - 10 = 3x + 8$, so $2x = 18$ and $x = 9$.
+2. C — [Geometry/Trig: Area and volume] $V = \pi r^2 h = \pi(3^2)(10) = 90\pi$.
+3. B — [Algebra: Linear functions] The coefficient of $h$ is the rate of change: each hour, $T$ changes by $-3$ degrees.
+4. 6 — [Algebra: Linear equations in two variables] Set $y = 0$: $4x = 24$, so $x = 6$.
+5. A — [Advanced Math: Nonlinear equations in one variable] $x^2 = 25$, and $x > 0$ gives $x = 5$.
+6. B — [Algebra: Linear functions] $f(5) = 15 - 4 = 11$ and $g(2) = 8$, so $f(5) - g(2) = 3$.
+7. C — [Algebra: Systems of two linear equations] Substitute: $3x + (2x - 1) = 14$, so $x = 3$ and $y = 5$; $x + y = 8$.
+8. $-5$ — [Advanced Math: Equivalent expressions] Expand: $2x^2 - 8x + 3x - 12 = 2x^2 - 5x - 12$, so $b = -5$.
+9. C — [PSDA: Percentages] Sale price $80(0.75) = 60$; with tax, $60(1.08) = 64.80$. Choice B applies the tax before the discount to the wrong base; A forgets the tax.
+10. C — [Algebra: Linear inequalities in one or two variables] Test $(2, 2)$: $2 \ge -4 + 5 = 1$ and $2 < 3$, both true. $(1, 3)$ fails the second inequality; $(4, 6)$ fails the second; $(0, 0)$ fails the first.
+11. C — [Advanced Math: Nonlinear functions] A $6\%$ yearly increase multiplies by $1.06$ each year: $P(t) = 2400(1.06)^t$.
+12. B — [PSDA: Two-variable data: models and scatterplots] The line $y = 2.5x + 10$ gives $2.5(14) + 10 = 45$. Choice C is the actual data point, not the prediction.
+13. $-10$ — [Algebra: Linear functions] Slope $= \frac{5 - 11}{3 - 1} = -3$, so $f(x) = -3x + 14$ and $f(8) = -24 + 14 = -10$.
+14. C — [Geometry/Trig: Lines, angles, and triangles] Scale factor $\frac{DE}{AB} = \frac{10}{6} = \frac{5}{3}$, so $EF = 9 \cdot \frac{5}{3} = 15$.
+15. C — [Advanced Math: Systems of equations in two variables] $x + 3 = x^2 - 3x + 6$ gives $x^2 - 4x + 3 = 0$, so $x = 1$ or $x = 3$; the points are $(1, 4)$ and $(3, 6)$.
+16. A — [Algebra: Linear equations in two variables] Slope of $\ell$ is $\frac{7 - (-1)}{6 - 2} = 2$; a parallel line through $(0, 4)$ is $y = 2x + 4$.
+17. 6 — [Advanced Math: Nonlinear functions] Vertex at $x = \frac{10}{2} = 5$; $f(5) = 25 - 50 + 31 = 6$.
+18. A — [PSDA: One-variable data: distributions and measures of center and spread] Median is the average of the 10th and 11th values, both $4$. Mean $= \frac{6 + 15 + 24 + 20 + 24}{20} = 4.45 > 4$; the two values of $12$ pull the mean up.
+19. B — [Geometry/Trig: Circles] Complete the square: $(x - 3)^2 + (y + 2)^2 = 12 + 9 + 4 = 25$, so $r = 5$.
+20. C — [Algebra: Systems of two linear equations] No solution means equal slopes: $\frac{3}{k} = \frac{6}{10}$, so $k = 5$ (and $\frac{7}{15} \ne \frac{1}{2}$, so the lines are distinct).
+21. A — [Advanced Math: Equivalent expressions] $\frac{(x - 7)(x + 3)}{(x - 7)(x + 7)} = \frac{x + 3}{x + 7}$.
+22. 9/17 — [PSDA: Probability and conditional probability] Of the $102$ students who prefer morning, $54$ are in grade 12: $\frac{54}{102} = \frac{9}{17} \approx .5294$ (either form is accepted).
+23. D — [Geometry/Trig: Right triangles and trigonometry] $\sin A = \frac{5}{13}$ means the side opposite $A$ is $5$ and the hypotenuse is $13$, so the side opposite $B$ is $12$. Then $\tan B = \frac{12}{5}$.
+24. B — [Advanced Math: Nonlinear equations in one variable] One solution when $k^2 - 4(4)(25) = 0$, so $k^2 = 400$ and $k = -20$ since $k < 0$.
+25. 4 — [Advanced Math: Nonlinear functions] $g(x) = ab^x$: $\frac{g(3)}{g(1)} = b^2 = 9$, so $b = 3$ and $g(0) = \frac{g(1)}{3} = 4$.
+26. A — [Algebra: Linear inequalities in one or two variables] Hours are limited ("at most" $\Rightarrow \le 40$) and earnings have a floor ("at least" $\Rightarrow \ge 1000$).
+27. 5 — [Advanced Math: Nonlinear functions] $p + q = 6$ and $q - p = 4$ give $p = 1$, $q = 5$; $c = pq = 5$.

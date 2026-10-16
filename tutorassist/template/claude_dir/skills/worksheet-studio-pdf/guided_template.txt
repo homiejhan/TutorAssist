@@ -1,0 +1,108 @@
+Jordan — Guided Worksheet: Factoring
+Algebra I · Blakely, Algebra: A Classical Approach §4.1–4.3 · October 14, 2026
+[settings density: normal, spacing: compact, part-spacing: standard]
+
+Problem 1. **§4.1 Common Factors**
+
+[box: Key idea]
+Factoring is "undoing" multiplication: we run the distributive property in reverse. A *common factor* is a factor shared by every term, and we want the *Greatest Common Factor (GCF)*.
+
+To factor out the GCF:
+(1) Find the GCF of the numbers.
+(2) Take each variable common to every term at its *lowest* power.
+(3) Multiply those together.
+(4) Write GCF(other stuff).
+
+The parentheses must hold the same number of terms you started with, so a term that equals the GCF leaves behind a $1$. A GCF can also be a binomial.
+[/box]
+
+**Example A.** Factor $12x^3y - 18x^2y^2 + 6xy$.
+- **Numbers:** the GCF of $12, 18, 6$ is $6$.
+- **Variables:** $x$ and $y$ appear in every term; lowest powers are $x^1$ and $y^1$. So the GCF is $6xy$.
+- **Divide** each term by $6xy$: $\ 2x^2,\ -3xy,\ +1$ (the last term equals the GCF, so a $1$ stays).
+- **Answer:** $6xy(2x^2 - 3xy + 1)$
+- **Check** by distributing:
+  $$6xy\cdot 2x^2 = 12x^3y, \quad 6xy\cdot(-3xy) = -18x^2y^2, \quad 6xy\cdot 1 = 6xy$$
+
+**Example B (binomial GCF).** Factor $5(x-2) + x(x-2)$.
+- The binomial $(x-2)$ is common to both terms, so it is the GCF.
+- Take it out front once: $(x-2)(5 + x)$. Never write it with a power.
+
+**Now you try.**
+(a) Factor $20a^4b^2 - 30a^3b^3 + 10a^2b$.
+(b) Factor $3y(y+4) - 7(y+4)$.
+
+
+Problem 2. **§4.2 Factoring by Grouping**
+
+[box: Key idea]
+*Factoring by grouping* is the main method for a polynomial with 4 terms. Always take out an overall GCF first. Then:
+(1) Arrange the terms so the first two share a factor and the last two share a factor.
+(2) Factor the GCF out of each pair.
+(3) If the two pairs now show a common binomial factor, factor it out.
+(4) If not, rearrange and try again; if it never works, it does not factor by grouping.
+[/box]
+
+[box gold: Sign rule]
+If the first term of the second pair is negative, factor out a *negative* GCF, which flips the signs of that pair.
+[/box]
+
+**Example A.** Factor $x^3 + 4x^2 + 3x + 12$.
+- **Group:** $(x^3 + 4x^2) + (3x + 12)$
+- **Factor each pair:** $x^2(x+4) + 3(x+4)$
+- **Common binomial** $(x+4)$: $(x+4)(x^2 + 3)$
+- **Check:** $(x+4)(x^2+3) = x^3 + 3x + 4x^2 + 12$, which matches the original.
+
+**Example B (negative in the second pair).** Factor $2x^3 - 6x^2 - 5x + 15$.
+- **Group:** $(2x^3 - 6x^2) + (-5x + 15)$
+- **Factor each pair:** the second pair starts with $-5x$, so factor out $-5$: $2x^2(x-3) - 5(x-3)$
+- **Common binomial** $(x-3)$: $(x-3)(2x^2 - 5)$
+
+**Now you try.**
+(a) Factor $y^3 + 5y^2 + 2y + 10$.
+(b) Factor $3a^3 - 9a^2 - 2a + 6$.
+
+
+Problem 3. **§4.3 Factoring $x^2 + bx + c$**
+
+[box: Key idea]
+A factorable trinomial with leading coefficient 1 factors into two binomials:
+$$x^2 + bx + c = (x + \underline{\ \ \ })(x + \underline{\ \ \ })$$
+This is *factoring by trial factors*: the two back numbers must multiply to $c$, then multiply the binomials back out to check that the middle term is $b$. Factor out any GCF first. A polynomial that will not factor is called *prime*.
+[/box]
+
+[box gold: Sign rules]
+- All positive means all positive.
+- Back term positive, middle negative: both binomials get a negative.
+- Back term negative: one binomial is positive and one is negative. If the middle term's sign comes out wrong, swap the signs.
+[/box]
+
+**Example A.** Factor $x^2 + 9x + 20$.
+- All positive. Pairs that multiply to $20$: $1\cdot 20,\ 2\cdot 10,\ 4\cdot 5$.
+- Only $4 + 5 = 9$ works: $(x+4)(x+5)$.
+
+**Example B.** Factor $x^2 - 2x - 24$.
+- Back is negative, so one sign each. Pairs for $24$ that differ by $2$: $4$ and $6$.
+- The middle is negative, so the larger number gets the minus: $(x-6)(x+4)$.
+- **Check:** $x^2 + 4x - 6x - 24 = x^2 - 2x - 24$.
+
+**Example C (prime).** Factor $x^2 + 4x + 6$.
+- All positive; pairs for $6$ are $1\cdot 6$ (sum $7$) and $2\cdot 3$ (sum $5$).
+- Neither gives $4$, so the trinomial is prime.
+
+**Now you try.**
+(a) Factor $x^2 + 11x + 24$.
+(b) Factor $m^2 - 9m + 14$.
+(c) Factor $p^2 + 3p - 28$.
+
+Answer Key
+1. (a) GCF of $20, 30, 10$ is $10$; lowest powers $a^2$ and $b^1$, so the GCF is $10a^2b$.
+  $$20a^4b^2 \div 10a^2b = 2a^2b, \quad -30a^3b^3 \div 10a^2b = -3ab^2, \quad 10a^2b \div 10a^2b = 1$$
+  **Answer:** $10a^2b(2a^2b - 3ab^2 + 1)$
+(b) The binomial $(y+4)$ is common: $(y+4)(3y - 7)$.
+2. (a) $(y^3 + 5y^2) + (2y + 10) = y^2(y+5) + 2(y+5) = (y+5)(y^2 + 2)$.
+(b) $(3a^3 - 9a^2) + (-2a + 6) = 3a^2(a-3) - 2(a-3) = (a-3)(3a^2 - 2)$.
+3. (a) Pairs for $24$: $3$ and $8$ sum to $11$. **Answer:** $(x+3)(x+8)$.
+(b) Back positive, middle negative, so both negative; pairs for $14$: $2$ and $7$ sum to $9$. **Answer:** $(m-2)(m-7)$.
+(c) Back negative: pairs for $28$ that differ by $3$ are $4$ and $7$; middle is positive so the larger gets the plus. **Answer:** $(p+7)(p-4)$.
+  **Check:** $p^2 - 4p + 7p - 28 = p^2 + 3p - 28$.

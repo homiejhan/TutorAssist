@@ -1,0 +1,6 @@
+{
+  "_comment": "SOLE SOURCE OF TRUTH for TutorAssist. Context for every worksheet, eval, homework, and lesson plan comes from exactly three fields per student: strengths, weaknesses, and coverNextSession. coverNextSession is a bare list of topic names in priority order — no rationale, no prose, no FLAGs — since subject already sets the difficulty tier and strengths/weaknesses already carry the 'why'. There is no session history, no eval-score log, and no file manifest in roster.json, and none may be added — a growing history is exactly the thing that makes stale information leak into prep. Session dates and durations come from schedule.json (written by the app from the tutor's calendar), and everything under material/ is disposable output that is never read back as context.",
+  "schemaVersion": 4,
+  "lastUpdated": "",
+  "students": []
+}

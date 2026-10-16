@@ -1,0 +1,81 @@
+{
+  "_comment": "Example students and books for a brand-new workspace (tutor init / tutor setup). Delete or edit them in the app's Students and Library pages.",
+  "students": [
+    {
+      "name": "Test Student 1",
+      "subject": "SAT Math",
+      "hw": true,
+      "status": "active",
+      "coverNextSession": [
+        "Holt-A1 §1-5: Solving Equations with Variables on Both Sides",
+        "Holt-A1 §1-6: Solving for a Variable",
+        "Holt-A1 §4-3: Rate of Change and Slope",
+        "Holt-A1 §4-6: Slope-Intercept Form",
+        "Holt-A1 §5-2: Solving Systems by Substitution"
+      ],
+      "strengths": [
+        "Solves Two-Step and Multi-Step Equations (Holt-A1 §1-4) reliably, distributing before combining like terms.",
+        "Reads Rate of Change and Slope (Holt-A1 §4-3) correctly off a table of values."
+      ],
+      "weaknesses": [
+        "Drops the sign when collecting variable terms in Solving Equations with Variables on Both Sides (Holt-A1 §1-5).",
+        "Cannot yet isolate the target variable in Solving for a Variable (Holt-A1 §1-6) when it sits in a denominator.",
+        "Swaps x- and y-intercepts in Using Intercepts (Holt-A1 §4-2)."
+      ]
+    },
+    {
+      "name": "Test Student 2",
+      "subject": "Pre-Calculus",
+      "hw": true,
+      "status": "active",
+      "coverNextSession": [
+        "Foerster-AT §8-3: Radicals, and Simple Radical Form",
+        "Foerster-AT §8-4: Radical Equations",
+        "Foerster-AT §8-5: Variation Functions with Non-Integer Exponents",
+        "Foerster-AT §9-1: Introduction to Quadratic Relations",
+        "Foerster-AT §9-3: Ellipses"
+      ],
+      "strengths": [
+        "Checks excluded values before writing the solution set in Fractional Equations and Extraneous Solutions (Foerster-AT §7-10).",
+        "Locates vertical asymptotes from the denominator's zeros in Graphs of Rational Algebraic Functions, again (Foerster-AT §7-9)."
+      ],
+      "weaknesses": [
+        "Long Division of Polynomials (Foerster-AT §7-5) breaks down when a degree is missing and a zero placeholder is needed.",
+        "Leaves radicals in the denominator instead of reducing to Simple Radical Form (Foerster-AT §8-3)."
+      ]
+    }
+  ],
+  "books": [
+    {
+      "key": "Holt-A1",
+      "title": "Holt McDougal Algebra 1",
+      "author": "",
+      "filePrefix": "Holt McDougal Algebra 1",
+      "notes": "Example entry. Upload your own copy of the book as a PDF whose file name starts with the filePrefix."
+    },
+    {
+      "key": "Foerster-AT",
+      "title": "Algebra and Trigonometry: Functions and Applications",
+      "author": "Foerster",
+      "filePrefix": "Foerster Algebra and Trigonometry",
+      "notes": "Example entry. Upload your own copy of the book as a PDF whose file name starts with the filePrefix."
+    }
+  ],
+  "subjectDefaults": [
+    {
+      "subject": "SAT Math",
+      "books": [
+        "Holt-A1",
+        "Foerster-AT"
+      ],
+      "note": ""
+    },
+    {
+      "subject": "Pre-Calculus",
+      "books": [
+        "Foerster-AT"
+      ],
+      "note": ""
+    }
+  ]
+}

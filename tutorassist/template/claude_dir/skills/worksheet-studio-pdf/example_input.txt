@@ -1,0 +1,38 @@
+Algebra 1A CBE Review
+15 Practice Questions
+
+Problem 1. Solve the following equation.
+$$-3(x + 4) - 2x = 2x + 9$$
+
+A) $-3$
+
+B) $3$
+
+C) $-\frac{21}{9}$
+
+D) $21$
+
+Problem 2. A parking garage charges \$6 for each hour parked, up to a
+maximum of 8 hours per day. If $n$ is the number of whole hours parked
+($n = 1, 2, \dots, 8$) and $c(n)$ is the total cost, what is the range of
+this function?
+
+A) All real numbers
+
+B) $c > 0$
+
+C) $c \ge 6$
+
+D) $c \in \{6, 12, 18, 24, 30, 36, 42, 48\}$
+
+Problem 3. A rectangle has area 48 and length 2 more than its width.
+(a) Write an equation that models this situation.
+(b) Find the dimensions.
+
+*Problem 4. A kayak rental costs \$12 deposit plus \$8 per hour. If $h$ is hours, which equation models the cost $c(h)$?
+
+Answer Key
+1. A — distribute and combine like terms: $-5x - 12 = 2x + 9 \Rightarrow x = -3$.
+2. D — cost is $c(n) = 6n$ for integer $n$ from 1 to 8, giving a discrete set.
+3. (a) $w(w+2)=48$ (b) width $=6$, length $=8$
+4. $c(h) = 12 + 8h$

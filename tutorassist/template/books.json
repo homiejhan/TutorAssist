@@ -1,0 +1,6 @@
+{
+  "_comment": "Canonical textbook keys for this workspace. Every topic name in roster.json cites a key from here (`Key §N-M: Topic Name`). filePrefix = the start of the PDF's file name in uploads/textbooks/. Keys are permanent once cited — never rename one. subjectDefaults rows list books in priority order for each subject.",
+  "generalNotes": "",
+  "books": [],
+  "subjectDefaults": []
+}
