@@ -16,7 +16,9 @@ const S = {
   matSel: null,
   focus: null,            // {student, date}: the student/session open on the desk
   docs: null,             // /api/students/{name}/documents for the focused student
-  viewer: null,           // {title, pdf, source, mode}
+  viewer: null,           // {title, pdf, source, mode, full}
+  peek: null,             // {runId, prompt, open}: the reply shown over a full-screen document
+  layout: { side: true, top: true },  // desk sidebar and header shown (kept in localStorage)
   library: null,
   oq: "",
 };
@@ -52,6 +54,7 @@ const ICONS = {
   x: "M6 6l12 12M18 6L6 18",
   more: "M5 12h.01M12 12h.01M19 12h.01",
   download: "M12 4v11M7 10.5l5 5 5-5M5 20h14",
+  doc: "M7 3.5h7l4 4v13H7zM14 3.5v4h4",
 };
 function icon(name) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -233,7 +236,7 @@ function connectEvents() {
     const ev = JSON.parse(m.data);
     if (ev.t === "run") {
       softRefresh();
-      if (S.focus && !["queued", "running"].includes(ev.run.status)) loadDocs();
+      if (S.focus && !["queued", "running"].includes(ev.run.status)) { loadDocs(); reloadIfChanged(ev.run); }
       if (ev.run.conversationId === S.convId) {
         const known = S.conv?.runs?.some((r) => r.run.id === ev.run.id);
         if (!known) openConversation(S.convId, false);
@@ -381,11 +384,15 @@ async function sendChat(text) {
   const body = { kind: "chat", text, attachments: S.attachments };
   if (S.convId) body.conversationId = S.convId;
   if (S.focus) { body.student = S.focus.student; body.date = S.focus.date; }
+  // The document on screen, so "make problem 3 easier" means that sheet.
+  const open = S.viewer && (S.viewer.pdf || S.viewer.source);
+  if (S.focus && open) body.document = open;
   const r = await api("POST", "/api/runs", body);
   S.attachments = [];
   renderAttachments();
   await openConversation(r.conversation.id);
   softRefresh();
+  return r;
 }
 
 /* ------------------------------------------------------------------ conversations + thread */
@@ -546,7 +553,7 @@ function paintAgent(m) {
       : h("span", { class: "cost" }, duration(run)));
 
   // Narration (all text blocks but the last) and tools form the activity log.
-  const finalText = m.result?.text || (running ? m.buffer || m.texts[m.texts.length - 1] : m.texts[m.texts.length - 1]) || "";
+  const finalText = agentText(m);
   const steps = [];
   m.tools.forEach((t) => steps.push(t));
   let activity = null;
@@ -576,6 +583,14 @@ function paintAgent(m) {
     m.roster.map((c) => `${c.name} (${c.change === "updated" ? c.fields.map((f) => FIELD_NAMES[f] || f).join(", ") : c.change})`).join("; ")) : null;
   const errs = m.errors.length && run.status !== "stopped" ? h("div", { class: "msg-error" }, m.errors.join("\n")) : null;
   fill(m.el, head, todos, activity, body, files, roster, errs);
+  if (S.peek?.runId === run.id) paintPeek();
+}
+
+/* The reply so far: the final answer once there is one, else the latest text. */
+function agentText(m) {
+  const running = ["queued", "running"].includes(m.run.status);
+  const last = m.texts[m.texts.length - 1];
+  return m.result?.text || (running ? m.buffer || last : last) || "";
 }
 
 function duration(run) {
@@ -646,6 +661,7 @@ function streamRun(runId) {
         model.files = r.run.files;
         model.roster = r.run.rosterChanges;
         paintAgent(model);
+        reloadIfChanged(r.run);
       }).catch(() => {});
       softRefresh();
     }
@@ -798,9 +814,9 @@ function paintFocus() {
     const title = `${st.name}: ${d.label} (${shortDate(date)})`;
     if (d.pdf) {
       return h("div", { class: "tile-wrap", style: `--i:${i}` },
-        h("button", { class: "tile" + (S.viewer?.pdf === d.pdf ? " on" : ""),
+        h("button", { class: "tile made" + (S.viewer?.pdf === d.pdf ? " on" : ""), title: `Open ${d.label}`,
           onclick: () => { openViewer({ title, pdf: d.pdf, source: d.source }); } },
-          h("span", { class: "tt" }, d.label), h("span", { class: "ts" }, "PDF")),
+          h("span", { class: "glyph" }, icon("doc")), h("span", { class: "tt" }, d.label)),
         h("a", { class: "icon-btn tile-dl", href: fileUrl(d.pdf) + "?download=1", download: d.pdf.split("/").pop(),
           title: `Download ${d.label}`, "aria-label": `Download ${d.label}` }, icon("download")));
     }
@@ -812,8 +828,8 @@ function paintFocus() {
     else if (st.hw) hint = "After feedback";
     else hint = "No homework";
     const open = d.source ? () => openViewer({ title, pdf: null, source: d.source, mode: "source" }) : undefined;
-    return h("div", { class: "tile-wrap", style: `--i:${i}` }, h(open ? "button" : "div", { class: "tile missing" + (open ? " can" : ""), onclick: open },
-      h("span", { class: "tt" }, d.label), h("span", { class: "ts" }, hint)));
+    return h("div", { class: "tile-wrap", style: `--i:${i}` }, h(open ? "button" : "div", { class: "tile missing" + (open ? " can" : ""), onclick: open, title: `${d.label}: ${hint}` },
+      h("span", { class: "glyph" }, icon("doc")), h("span", { class: "tt" }, d.label), h("span", { class: "ts" }, hint)));
   }));
 
   fill($("#doc-other"), cur.other.length ? [
@@ -824,9 +840,41 @@ function paintFocus() {
 /* ------------------------------------------------------------------ document viewer */
 function openViewer(v) {
   if (!leaveEditor()) return;
-  S.viewer = { ...v, mode: v.mode || (v.pdf ? "pdf" : "file") };
+  S.viewer = { ...v, mode: v.mode || (v.pdf ? "pdf" : "file"), full: !!S.viewer?.full };
   paintViewer();
   paintFocus();
+}
+
+/* Full screen moves the same viewer element on top of everything (CSS only), so the
+   PDF isn't reloaded and keeps its scroll position. */
+function setFull(on) {
+  if (!S.viewer) return;
+  S.viewer.full = on;
+  paintViewerChrome();
+  if (on) {
+    paintPeek();
+    setTimeout(() => $("#fs-input").focus(), 60);
+  } else {
+    $("#viewer-expand").focus({ preventScroll: true });
+  }
+}
+
+/* After a run, show the new version of the open document if the run rewrote it. */
+function reloadIfChanged(run) {
+  const v = S.viewer;
+  if (!v || !run || v.reloadedFor === run.id) return;
+  const files = run.files || [];
+  if (!(v.pdf && files.includes(v.pdf)) && !(v.source && files.includes(v.source))) return;
+  v.reloadedFor = run.id;
+  v.changedBy = run.id;
+  v.bust = Date.now();
+  const frame = $("#viewer-body iframe");
+  if (v.mode === "source") {
+    if (v.draft === undefined || v.draft === v.saved) { v.draft = undefined; v.saved = undefined; paintViewer(); }
+  } else if (frame) {
+    frame.src = fileUrl(v.pdf) + `?v=${v.bust}`;
+  }
+  paintPeek();
 }
 function closeViewer() {
   if (!leaveEditor()) return;
@@ -881,11 +929,25 @@ function sourceEditor(v) {
     .catch((e) => { status.textContent = `Couldn't load the text (${e.message}).`; });
   return h("div", { class: "src-editor" }, ta, h("div", { class: "src-bar" }, save, revert, status));
 }
+function paintViewerChrome() {
+  const v = S.viewer;
+  const full = !!v?.full;
+  const box = $("#viewer");
+  box.classList.toggle("full", full);
+  box.classList.toggle("src", !!v && v.mode === "source");
+  document.body.classList.toggle("doc-full", full);
+  $("#viewer-expand").hidden = full;
+  $("#viewer-exit").hidden = !full;
+  $("#viewer-close").hidden = full;
+  if (!full) $("#fs-reply").hidden = true;
+}
+
 function paintViewer() {
   const box = $("#viewer");
   const v = S.viewer;
-  if (!v) { box.hidden = true; fill($("#viewer-body")); return; }
+  if (!v) { box.hidden = true; fill($("#viewer-body")); paintViewerChrome(); return; }
   box.hidden = false;
+  paintViewerChrome();
   $("#viewer-title").textContent = v.title;
   fill($("#viewer-seg"), v.pdf && v.source
     ? [["pdf", "PDF"], ["source", isSource(v.source) ? "Edit text" : "Text"]].map(([k, label]) => h("button", { "aria-pressed": v.mode === k ? "true" : "false",
@@ -908,6 +970,84 @@ function paintViewer() {
     fetch(fileUrl(path)).then((r) => (r.ok ? r.text() : Promise.reject(new Error(r.statusText))))
       .then((t) => { pre.textContent = t; }).catch((e) => { pre.textContent = `Couldn't load this file (${e.message}).`; });
   }
+}
+
+/* ------------------------------------------------------------------ full-screen prompt + reply */
+function paintPeek() {
+  const box = $("#fs-reply");
+  const p = S.peek;
+  const m = p && S.models[p.runId];
+  if (!p || !p.open || !S.viewer?.full) { box.hidden = true; return; }
+  box.hidden = false;
+  const run = m?.run || { id: p.runId, status: "queued" };
+  const running = ["queued", "running"].includes(run.status);
+  const label = { queued: "Waiting", running: "Working", done: "Done", error: "Didn't finish", stopped: "Stopped" }[run.status] || run.status;
+  const text = m ? agentText(m) : "";
+  const step = m?.status || (m?.tools?.length ? m.tools[m.tools.length - 1].summary : "") || "Reading your message…";
+  const reply = text ? md(text) : null;
+  if (reply && running && !m.result) reply.classList.add("streaming");
+  const bodyEl = box.querySelector(".fs-reply-body");
+  const stick = !bodyEl || bodyEl.scrollHeight - bodyEl.scrollTop - bodyEl.clientHeight < 40;
+  const body = h("div", { class: "fs-reply-body" },
+    h("p", { class: "fs-q", title: p.prompt }, p.prompt),
+    reply || (running ? h("p", { class: "fs-wait" }, step) : null),
+    S.viewer?.changedBy === run.id ? h("p", { class: "fs-note" }, "Updated the sheet you're looking at.") : null,
+    m?.errors?.length && run.status !== "stopped" ? h("div", { class: "msg-error" }, m.errors.join("\n")) : null);
+  fill(box,
+    h("div", { class: "fs-reply-head" },
+      h("span", { class: "state " + run.status }, running ? h("span", { class: "pulse" }) : null, label),
+      running ? h("button", { class: "link danger", onclick: () => api("POST", `/api/runs/${run.id}/cancel`).catch(fail) }, "Stop") : null,
+      h("button", { class: "icon-btn", title: "Hide reply", "aria-label": "Hide reply", onclick: () => { p.open = false; paintPeek(); } }, icon("x"))),
+    body);
+  if (stick) body.scrollTop = body.scrollHeight;
+}
+
+function wireFullScreen() {
+  const ta = $("#fs-input");
+  const send = $("#fs-send");
+  const grow = () => {
+    ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
+    send.disabled = !ta.value.trim();
+  };
+  ta.addEventListener("input", grow);
+  ta.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#fs-ask").requestSubmit(); }
+  });
+  $("#fs-ask").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = ta.value.trim();
+    if (!text) return;
+    send.disabled = true;
+    try {
+      const r = await sendChat(text);
+      ta.value = "";
+      S.peek = { runId: r.run.id, prompt: text, open: true };
+      paintPeek();
+    } catch (err) { fail(err); } finally { grow(); }
+  });
+  $("#viewer-expand").addEventListener("click", () => setFull(true));
+  $("#viewer-exit").addEventListener("click", () => setFull(false));
+}
+
+/* ------------------------------------------------------------------ layout: hide the header or the desk sidebar */
+function loadLayout() {
+  try { Object.assign(S.layout, JSON.parse(localStorage.getItem("ta.layout") || "{}")); } catch { /* defaults */ }
+}
+function setLayout(part, on) {
+  S.layout[part] = on;
+  try { localStorage.setItem("ta.layout", JSON.stringify(S.layout)); } catch { /* not kept */ }
+  applyLayout();
+  // Hand focus to whatever brings it back, so the keyboard isn't left on a hidden button.
+  const next = { side: on ? "#btn-side" : "#pull-side", top: on ? "#btn-top" : "#pull-top" }[part];
+  setTimeout(() => $(next)?.focus({ preventScroll: true }), on ? 340 : 0);
+}
+function applyLayout() {
+  const { side, top } = S.layout;
+  document.body.classList.toggle("side-off", !side);
+  document.body.classList.toggle("top-off", !top);
+  $("#pull-side").hidden = side;
+  $("#pull-top").hidden = top;
+  if (top) setTimeout(moveNavHl, 340);
 }
 
 /* ------------------------------------------------------------------ composer */
@@ -1580,6 +1720,11 @@ function wire() {
   $$(".tabs button").forEach((b) => b.addEventListener("click", () => show(b.dataset.view)));
   $("#btn-prep-today").addEventListener("click", () => startPrep(todayISO()));
   // With a student open, feedback is for them and the session on screen.
+  $("#btn-side").addEventListener("click", () => setLayout("side", false));
+  $("#pull-side").addEventListener("click", () => setLayout("side", true));
+  $("#btn-top").addEventListener("click", () => setLayout("top", false));
+  $("#pull-top").addEventListener("click", () => setLayout("top", true));
+  wireFullScreen();
   $("#btn-feedback").addEventListener("click", () => openFeedback(S.focus?.student, S.focus?.date || undefined));
   $("#btn-refresh-cal").addEventListener("click", async (e) => {
     const b = e.currentTarget;
@@ -1605,6 +1750,8 @@ function wire() {
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     if (!$("#overlay").hidden) { if (!$("#overlay .setup")) closeDialog(); }
+    else if ($(".menu")) return;  // the menu closes itself
+    else if (S.viewer?.full) setFull(false);  // first Escape leaves full screen, the next closes the viewer
     else if (S.viewer) closeViewer();
   });
   window.addEventListener("beforeunload", (e) => { if (S.dirty) { e.preventDefault(); e.returnValue = ""; } });
@@ -1612,6 +1759,11 @@ function wire() {
 }
 
 (async function boot() {
+  // Restore a hidden header/sidebar without animating it on page load.
+  document.body.classList.add("preload");
+  loadLayout();
+  applyLayout();
+  requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove("preload")));
   wire();
   moveNavHl();
   try {

@@ -23,6 +23,9 @@ from . import __version__, books, calendar_ics, doctor, documents, roster, sched
 from .config import AppState, WorkspaceConfig
 from .runs import RunManager
 
+# A session document the tutor can have open in the viewer (sent with chat messages).
+OPEN_DOC_RE = re.compile(r"^(material/\d{4}-\d{2}-\d{2}/[^/]+\.pdf|\.work/sources/\d{4}-\d{2}-\d{2}/[^/]+\.txt)$")
+
 log = logging.getLogger("tutorassist.server")
 WEB = Path(__file__).parent / "web"
 SERVABLE_ROOTS = ("material", "uploads", "reference", ".work")
@@ -340,8 +343,14 @@ def create_app(ws: Path) -> FastAPI:
                 # The tutor picked this student in the app; say so, so "make the eval shorter" is unambiguous.
                 date = body.get("date") or today().isoformat()
                 when = "today's session" if date == today().isoformat() else f"the {date} session"
+                seen = ""
+                doc = (body.get("document") or "").strip()
+                # The document open on screen, so "problem 3" means that sheet. Only real
+                # session files are named; anything else is dropped.
+                if OPEN_DOC_RE.match(doc) and ".." not in doc and (ws / doc).is_file():
+                    seen = f" They have {doc} open on screen, so \"this sheet\" or \"problem 3\" means that document."
                 agent_prompt = (f"[The tutor has {student} selected in the app; this message is about "
-                                f"{student} and {when} unless it says otherwise.]\n\n{prompt}{att_text}")
+                                f"{student} and {when} unless it says otherwise.{seen}]\n\n{prompt}{att_text}")
         run = runs.start(kind=kind, prompt=prompt + att_text, agent_prompt=agent_prompt, title=title,
                          conversation_id=conv, attachments=attachments, student=student)
         return {"run": run.public(), "conversation": runs.conversations[run.conversationId]}

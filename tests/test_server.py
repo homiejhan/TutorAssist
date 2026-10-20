@@ -121,6 +121,21 @@ def test_chat_about_selected_student(client):
     assert r["run"]["prompt"] == "make the eval shorter"  # what the tutor sees
     sent = json.loads((client.ws / ".fake_last_args.json").read_text())["prompt"]
     assert "The tutor has Ana selected in the app" in sent and "make the eval shorter" in sent
+    assert "open on screen" not in sent
+    # the document open in the viewer is named, but only if it's a real session file
+    doc = client.ws / "material" / "2026-10-16" / "Ana_2026-10-16_Eval.pdf"
+    doc.parent.mkdir(parents=True, exist_ok=True)
+    doc.write_bytes(b"%PDF-1.4 fake")
+    r2 = client.post("/api/runs", json={"kind": "chat", "text": "make problem 3 easier", "student": "Ana",
+                                        "date": "2026-10-16", "conversationId": r["conversation"]["id"],
+                                        "document": "material/2026-10-16/Ana_2026-10-16_Eval.pdf"}).json()
+    wait_done(client, r2["run"]["id"])
+    sent = json.loads((client.ws / ".fake_last_args.json").read_text())["prompt"]
+    assert "They have material/2026-10-16/Ana_2026-10-16_Eval.pdf open on screen" in sent
+    for bad in ("../outside.pdf", "material/2026-10-16/../../x.pdf", "roster.json", "material/2026-10-16/missing.pdf"):
+        r3 = client.post("/api/runs", json={"kind": "chat", "text": "hi", "student": "Ana", "document": bad}).json()
+        wait_done(client, r3["run"]["id"])
+        assert "open on screen" not in json.loads((client.ws / ".fake_last_args.json").read_text())["prompt"]
     st = client.get("/api/state").json()
     assert any(c["student"] == "Ana" for c in st["conversations"])
     # a prep for one student is tagged to that student too

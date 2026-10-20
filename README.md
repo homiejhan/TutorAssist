@@ -13,8 +13,11 @@ stays in a folder on your computer as plain files and PDFs.
 ![TutorAssist with a student selected: today's documents as tiles, the chat, and a worksheet open for editing](docs/student.png)
 
 - **Prep runs by itself** every morning for that day's sessions, or with one click.
-- **Click a student** to see their five documents for any session, read them beside the
-  chat, download them, or ask for changes ("make problem 3 easier").
+- **Click a student** to see their five documents for any session (the ones already made
+  glow green), read them beside the chat, download them, or ask for changes ("make
+  problem 3 easier").
+- **Open a worksheet full screen** and ask about it right there: the reply shows in a
+  small see-through window over the sheet, and the sheet reloads when it changes.
 - **Fix a typo yourself:** open a document, switch to **Edit text**, and rebuild the PDF
   in a couple of seconds, without using any Claude usage.
 - **Your textbooks are the source of truth.** Topics, wording and worked examples follow
@@ -122,6 +125,8 @@ to ones from your own books.
 | See a student's documents | Click the session (or the student's name) on the left. The guided worksheet, eval, answers and homework appear as tiles; earlier sessions are one click away |
 | Ask for changes | Select the student, then type in the chat ("make the eval shorter"). Changes replace that session's documents instead of adding files |
 | Fix a typo or a number yourself | Open the document → **Edit text** → **Save & rebuild PDF** |
+| Look at a worksheet full screen | Open it, then the expand button next to download. Type in the box at the bottom right to ask about it; **Exit full screen** or Esc to go back |
+| Make more room | The arrow at the top right hides the header; the panel button beside **Schedule** hides the sidebar. Small tabs on the edges bring them back |
 | Log how a session went | **Log feedback** (top right): the student's eval answers, notes, photos of their work |
 | Edit a student | **Students**, or **⋯ → Edit student** on the desk |
 | Answer the agent's questions | **Questions** (the tab appears when the agent has one) |

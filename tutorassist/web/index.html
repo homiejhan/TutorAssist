@@ -27,18 +27,24 @@
       <span class="busy" id="busy" hidden><span class="pulse"></span>Working</span>
       <button class="btn ghost" id="btn-feedback">Log feedback</button>
       <button class="btn primary" id="btn-prep-today">Prep today</button>
+      <button class="icon-btn" id="btn-top" title="Hide header" aria-label="Hide header"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 14.5l6-6 6 6"/></svg></button>
     </div>
   </header>
+  <button class="pull pull-top" id="pull-top" title="Show header" aria-label="Show header" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>
 
   <div class="health" id="health" role="alert" hidden></div>
   <main id="views">
     <!-- Desk ------------------------------------------------------------ -->
     <section class="view desk active" data-view="desk">
-      <aside class="desk-side">
+      <button class="pull pull-side" id="pull-side" title="Show sidebar" aria-label="Show sidebar" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button>
+      <aside class="desk-side" id="desk-side">
         <div class="side-block">
           <div class="side-head">
             <h2>Schedule</h2>
-            <button class="icon-btn" id="btn-refresh-cal" title="Refresh calendar" aria-label="Refresh calendar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></svg></button>
+            <span class="side-tools">
+              <button class="icon-btn" id="btn-refresh-cal" title="Refresh calendar" aria-label="Refresh calendar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></svg></button>
+              <button class="icon-btn" id="btn-side" title="Hide sidebar" aria-label="Hide sidebar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15M15.5 10l-2 2 2 2"/></svg></button>
+            </span>
           </div>
           <p class="cal-note" id="cal-note" hidden></p>
           <ol class="days" id="days"></ol>
@@ -89,10 +95,18 @@
             <div class="viewer-bar">
               <span class="viewer-title" id="viewer-title"></span>
               <div class="seg" id="viewer-seg" role="group" aria-label="Show"></div>
+              <button class="icon-btn" id="viewer-expand" title="Full screen" aria-label="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5h5v5M19.5 4.5l-6 6M9.5 19.5h-5v-5M4.5 19.5l6-6"/></svg></button>
               <a class="icon-btn" id="viewer-download" href="#" title="Download" aria-label="Download"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg></a>
+              <button class="btn small fs-exit" id="viewer-exit" title="Exit full screen (Esc)" aria-label="Exit full screen" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 14.5h5v5M9.5 14.5l-6 6M19.5 9.5h-5v-5M14.5 9.5l6-6"/></svg><span class="fs-exit-label">Exit full screen</span></button>
               <button class="icon-btn" id="viewer-close" title="Close" aria-label="Close viewer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
             </div>
             <div class="viewer-body" id="viewer-body"></div>
+            <!-- full screen only: ask about the sheet without leaving it -->
+            <div class="fs-reply" id="fs-reply" aria-live="polite" hidden></div>
+            <form class="fs-ask" id="fs-ask">
+              <textarea id="fs-input" rows="1" placeholder="Ask about this worksheet…" aria-label="Ask about this worksheet"></textarea>
+              <button class="send" type="submit" id="fs-send" aria-label="Send" title="Send" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg></button>
+            </form>
           </aside>
         </div>
       </div>
